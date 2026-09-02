@@ -1,12 +1,16 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
+  buildPublicFunctionUrl,
   buildSafeRedirect,
   clearNonceCookie,
   getCookie,
+  isExpectedSteamReturnTo,
   oauthNonceCookies,
   oauthSecurityHeaders,
+  parseSteamClaimedId,
 } from "../_shared/oauth-security.ts";
+import { resolvePrimarySiteOrigin } from "../_shared/origin-security.ts";
 
 const json = (status: number, body: Record<string, unknown>) =>
   new Response(JSON.stringify(body), {
@@ -63,15 +67,24 @@ serve(async (req) => {
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
       return json(500, { error: "server_not_configured" });
     }
+    try {
+      buildPublicFunctionUrl(SUPABASE_URL, "steam-auth-callback");
+    } catch {
+      return json(500, { error: "server_not_configured" });
+    }
 
     const url = new URL(req.url);
     if (url.search.length > 16384) {
       return json(414, { error: "request_too_large" });
     }
-    const fallbackSite =
-      Deno.env.get("SITE_URL") ||
-      Deno.env.get("PUBLIC_SITE_URL") ||
-      "https://spot-light-xi.vercel.app";
+    const fallbackSite = resolvePrimarySiteOrigin(
+      Deno.env.get("SITE_URL"),
+      Deno.env.get("PUBLIC_SITE_URL"),
+    );
+
+    if (!fallbackSite) {
+      return json(500, { error: "server_not_configured" });
+    }
 
     const safeRedirect = buildSafeRedirect(
       url.searchParams.get("redirect"),
@@ -102,22 +115,19 @@ serve(async (req) => {
     const identity = openIdParams.get("openid.identity") || "";
     const opEndpoint = openIdParams.get("openid.op_endpoint") || "";
     const returnTo = openIdParams.get("openid.return_to") || "";
-    const match = claimedId.match(/^https:\/\/steamcommunity\.com\/openid\/id\/(\d{17})$/);
+    const steamId = parseSteamClaimedId(claimedId);
 
-    let assertedReturnTo: URL;
     try {
-      assertedReturnTo = new URL(returnTo);
+      new URL(returnTo);
     } catch {
       return json(400, { error: "invalid_openid_return_to" });
     }
 
     if (
-      !match ||
+      !steamId ||
       identity !== claimedId ||
       opEndpoint !== "https://steamcommunity.com/openid/login" ||
-      assertedReturnTo.origin !== url.origin ||
-      assertedReturnTo.pathname !== url.pathname ||
-      assertedReturnTo.searchParams.get("nonce") !== nonceFromUrl
+      !isExpectedSteamReturnTo(returnTo, SUPABASE_URL, safeRedirect, nonceFromUrl)
     ) {
       return json(400, { error: "invalid_openid_assertion" });
     }
@@ -137,12 +147,6 @@ serve(async (req) => {
     const verifyText = await verifyRes.text();
     if (!/(?:^|\r?\n)is_valid:true(?:\r?\n|$)/.test(verifyText)) {
       return json(401, { error: "steam_invalid" });
-    }
-
-    const steamId = match?.[1];
-
-    if (!steamId) {
-      return json(400, { error: "steam_id_missing" });
     }
 
     const steamPlayer = await fetchSteamPlayerSummary(STEAM_API_KEY, steamId);

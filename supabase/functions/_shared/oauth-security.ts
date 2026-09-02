@@ -17,10 +17,58 @@ export const oauthNonceCookies = {
 const parseHttpUrl = (value: string): URL | null => {
   try {
     const url = new URL(value);
-    return url.protocol === "https:" || url.protocol === "http:" ? url : null;
+    if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+    return url.username || url.password ? null : url;
   } catch {
     return null;
   }
+};
+
+export const buildPublicFunctionUrl = (supabaseUrl: string, functionName: string): URL => {
+  const publicUrl = parseHttpUrl(supabaseUrl);
+  if (
+    !publicUrl ||
+    publicUrl.protocol !== "https:" ||
+    publicUrl.username ||
+    publicUrl.password ||
+    publicUrl.port ||
+    publicUrl.search ||
+    publicUrl.hash ||
+    publicUrl.pathname !== "/" ||
+    !/^[a-z0-9-]+$/.test(functionName)
+  ) {
+    throw new Error("invalid_supabase_url");
+  }
+
+  return new URL(`/functions/v1/${functionName}`, publicUrl.origin);
+};
+
+export const parseSteamClaimedId = (claimedId: string): string | null => {
+  const match = claimedId.match(/^https?:\/\/steamcommunity\.com\/openid\/id\/(\d{17})$/);
+  return match?.[1] || null;
+};
+
+export const buildSteamCallbackUrl = (
+  supabaseUrl: string,
+  redirect: string,
+  nonce: string,
+): URL => {
+  const callbackUrl = buildPublicFunctionUrl(supabaseUrl, "steam-auth-callback");
+  callbackUrl.searchParams.set("redirect", redirect);
+  callbackUrl.searchParams.set("nonce", nonce);
+  return callbackUrl;
+};
+
+export const isExpectedSteamReturnTo = (
+  assertedReturnTo: string,
+  supabaseUrl: string,
+  redirect: string,
+  nonce: string,
+): boolean => {
+  const assertedUrl = parseHttpUrl(assertedReturnTo);
+  if (!assertedUrl) return false;
+
+  return assertedUrl.toString() === buildSteamCallbackUrl(supabaseUrl, redirect, nonce).toString();
 };
 
 /**

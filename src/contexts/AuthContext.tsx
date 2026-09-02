@@ -10,6 +10,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { SUPABASE_URL } from "@/config/runtimeEnv";
+import { getAuthReturnUrl } from "@/features/auth/authRedirects";
 
 interface AuthContextType {
   user: User | null;
@@ -79,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth?mode=login`,
+        emailRedirectTo: getAuthReturnUrl(),
         data: {
           display_name: displayName || "Novo Gamer",
         },
@@ -100,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: getAuthReturnUrl(),
       },
     });
     return { error: error as Error | null };
@@ -112,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: new Error("Supabase URL not configured") };
     }
 
-    const redirect = encodeURIComponent(window.location.origin);
+    const redirect = encodeURIComponent(getAuthReturnUrl());
     const steamUrl = `${supabaseUrl}/functions/v1/steam-auth-start?redirect=${redirect}`;
     window.location.assign(steamUrl);
     return { error: null };
@@ -124,7 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: new Error("Supabase URL not configured") };
     }
 
-    const redirect = encodeURIComponent(window.location.origin);
+    const redirect = encodeURIComponent(getAuthReturnUrl());
     const xboxUrl = `${supabaseUrl}/functions/v1/xbox-auth-start?redirect=${redirect}`;
     window.location.assign(xboxUrl);
     return { error: null };
@@ -136,7 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: new Error("Supabase URL not configured") };
     }
 
-    const redirect = encodeURIComponent(window.location.origin);
+    const redirect = encodeURIComponent(getAuthReturnUrl());
     const psnUrl = `${supabaseUrl}/functions/v1/psn-auth-start?redirect=${redirect}`;
     window.location.assign(psnUrl);
     return { error: null };
@@ -144,7 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const requestPasswordReset = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth?mode=reset`,
+      redirectTo: getAuthReturnUrl("reset"),
     });
     return { error: error as Error | null };
   };

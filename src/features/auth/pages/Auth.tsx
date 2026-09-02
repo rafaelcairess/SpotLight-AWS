@@ -7,8 +7,6 @@ import { SignupForm } from "@/features/auth/components/SignupForm";
 import { PasswordResetRequestForm } from "@/features/auth/components/PasswordResetRequestForm";
 import { PasswordResetForm } from "@/features/auth/components/PasswordResetForm";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
 const Auth = () => {
@@ -18,21 +16,6 @@ const Auth = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    const maybeExchange = async () => {
-      const url = new URL(window.location.href);
-      if (url.searchParams.get("code")) {
-        const { error } = await supabase.auth.exchangeCodeForSession(window.location.href);
-        if (error) {
-          toast.error(t("auth.verifyError"), {
-            description: error.message,
-          });
-        }
-        window.history.replaceState({}, "", "/auth?mode=login");
-      }
-    };
-
-    maybeExchange();
-
     const params = new URLSearchParams(window.location.search);
     const queryMode = params.get("mode");
     if (queryMode === "signup") setMode("signup");
@@ -41,7 +24,7 @@ const Auth = () => {
     if (window.location.hash.includes("type=recovery")) {
       setMode("recover");
     }
-  }, [t]);
+  }, []);
 
   useEffect(() => {
     if (!loading && user && mode !== "recover") {

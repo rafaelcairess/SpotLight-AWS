@@ -1,12 +1,12 @@
 <div align="center">
 
-# SpotLight — AWS Migration
+# SpotLight
 
 ### Sua biblioteca, suas conquistas e sua história gamer em um só perfil.
 
 <p>
-  <a href="https://spot-light-xi.vercel.app">
-    <img alt="SpotLight online" src="https://img.shields.io/badge/PROJETO-ONLINE-22c55e?style=for-the-badge&logo=vercel&logoColor=white">
+  <a href="https://spotlight.rafaelcpires.abrdns.com">
+    <img alt="SpotLight online" src="https://img.shields.io/badge/PROJETO-ONLINE-22c55e?style=for-the-badge&logo=amazonwebservices&logoColor=white">
   </a>
   <a href="https://github.com/rafaelcairess/SpotLight-AWS/actions/workflows/ci.yml">
     <img alt="Status da CI" src="https://img.shields.io/github/actions/workflow/status/rafaelcairess/SpotLight-AWS/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI">
@@ -25,13 +25,13 @@
   <img alt=".NET 8" src="https://img.shields.io/badge/.NET-8-512BD4?style=flat-square&logo=dotnet&logoColor=white">
 </p>
 
-[Acessar o projeto](https://spot-light-xi.vercel.app) ·
+[Acessar o projeto](https://spotlight.rafaelcpires.abrdns.com) ·
 [Ver funcionalidades](#principais-funcionalidades) ·
 [Conhecer a arquitetura](#arquitetura)
 
 <br>
 
-<a href="https://spot-light-xi.vercel.app">
+<a href="https://spotlight.rafaelcpires.abrdns.com">
   <img src="docs/screenshots/explorar.webp" alt="Página Explorar do SpotLight com jogos em destaque, coleções e rankings" width="100%">
 </a>
 
@@ -39,11 +39,9 @@
 
 ## Sobre o projeto
 
-Este repositório acompanha a migração progressiva do SpotLight para a AWS. A
-[versão original](https://github.com/rafaelcairess/SpotLight), publicada na Vercel e
-conectada ao Supabase, continua sendo a demonstração estável. Nesta primeira fase,
-somente o frontend foi preparado para hospedagem estática em S3 e CloudFront; nenhum
-recurso AWS foi criado.
+Este repositório acompanha a evolução do SpotLight na AWS. O frontend oficial é
+publicado em S3 e distribuído pelo CloudFront no domínio
+`https://spotlight.rafaelcpires.abrdns.com`, conectado ao projeto Supabase atual.
 
 Steam, Xbox e PlayStation guardam partes diferentes da nossa vida nos games. Para lembrar o que jogou, quanto tempo investiu ou quais jogos completou, normalmente é preciso consultar vários perfis.
 
@@ -71,12 +69,12 @@ Além da biblioteca pessoal, o SpotLight oferece busca, rankings, promoções, r
 <table>
   <tr>
     <td width="50%">
-      <a href="https://spot-light-xi.vercel.app/u/aeb">
+      <a href="https://spotlight.rafaelcpires.abrdns.com/u/aeb">
         <img src="docs/screenshots/perfil-publico.webp" alt="Perfil público do SpotLight">
       </a>
     </td>
     <td width="50%">
-      <a href="https://spot-light-xi.vercel.app/top">
+      <a href="https://spotlight.rafaelcpires.abrdns.com/top">
         <img src="docs/screenshots/top-games.webp" alt="Ranking Top Games do SpotLight">
       </a>
     </td>
@@ -105,14 +103,14 @@ React + TypeScript (build estático para S3/CloudFront)
 
 O frontend é organizado por domínios de negócio. O acesso a dados fica em hooks reutilizáveis e o TanStack Query cuida de cache, mutations e invalidações. Operações que dependem de segredos são executadas nas Edge Functions, nunca no navegador.
 
-| Camada        | Tecnologias                                 |
-| ------------- | ------------------------------------------- |
-| **Frontend**  | React 18, TypeScript, Vite e React Router   |
-| **Interface** | Tailwind CSS, shadcn/ui e Radix UI          |
-| **Dados**     | TanStack Query, Supabase e PostgreSQL       |
-| **Backend**   | Supabase Edge Functions com Deno            |
-| **Qualidade** | Vitest, ESLint, Prettier e TypeScript       |
-| **Entrega**   | AWS S3 e CloudFront (próxima etapa prática) |
+| Camada        | Tecnologias                                     |
+| ------------- | ----------------------------------------------- |
+| **Frontend**  | React 18, TypeScript, Vite e React Router       |
+| **Interface** | Tailwind CSS, shadcn/ui e Radix UI              |
+| **Dados**     | TanStack Query, Supabase e PostgreSQL           |
+| **Backend**   | Supabase Edge Functions com Deno                |
+| **Qualidade** | Vitest, ESLint, Prettier e TypeScript           |
+| **Entrega**   | AWS S3, CloudFront, ACM e domínio personalizado |
 
 Uma API em **ASP.NET Core 8** também está sendo desenvolvida como base para uma migração gradual do backend. Ela já possui health check, autenticação JWT/JWKS e testes automatizados, mas ainda não faz parte do ambiente de produção.
 

@@ -1,10 +1,12 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import {
   buildSafeRedirect,
+  buildSteamCallbackUrl,
   oauthNonceCookies,
   oauthSecurityHeaders,
   setNonceCookie,
 } from "../_shared/oauth-security.ts";
+import { resolvePrimarySiteOrigin } from "../_shared/origin-security.ts";
 
 serve((req) => {
   if (req.method !== "GET") {
@@ -15,11 +17,18 @@ serve((req) => {
   }
 
   const url = new URL(req.url);
-  const origin = url.origin;
-  const fallbackSite =
-    Deno.env.get("SITE_URL") ||
-    Deno.env.get("PUBLIC_SITE_URL") ||
-    "https://spot-light-xi.vercel.app";
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+  const fallbackSite = resolvePrimarySiteOrigin(
+    Deno.env.get("SITE_URL"),
+    Deno.env.get("PUBLIC_SITE_URL"),
+  );
+
+  if (!supabaseUrl || !fallbackSite) {
+    return new Response(JSON.stringify({ error: "server_not_configured" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...oauthSecurityHeaders },
+    });
+  }
 
   const requestedRedirect = url.searchParams.get("redirect");
   const safeRedirect = buildSafeRedirect(
@@ -32,15 +41,21 @@ serve((req) => {
   // Gera nonce aleatório para proteção CSRF
   const nonce = crypto.randomUUID();
 
-  const callbackUrl = new URL(`${origin}/functions/v1/steam-auth-callback`);
-  callbackUrl.searchParams.set("redirect", safeRedirect);
-  callbackUrl.searchParams.set("nonce", nonce);
+  let callbackUrl: URL;
+  try {
+    callbackUrl = buildSteamCallbackUrl(supabaseUrl, safeRedirect, nonce);
+  } catch {
+    return new Response(JSON.stringify({ error: "server_not_configured" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...oauthSecurityHeaders },
+    });
+  }
 
   const params = new URLSearchParams({
     "openid.ns": "http://specs.openid.net/auth/2.0",
     "openid.mode": "checkid_setup",
     "openid.return_to": callbackUrl.toString(),
-    "openid.realm": origin,
+    "openid.realm": `${callbackUrl.origin}/`,
     "openid.identity": "http://specs.openid.net/auth/2.0/identifier_select",
     "openid.claimed_id": "http://specs.openid.net/auth/2.0/identifier_select",
   });

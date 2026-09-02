@@ -6,6 +6,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { lazy, Suspense } from "react";
 import { PresenceHeartbeat } from "@/hooks/usePresence";
 import { RouteMetadata } from "@/components/RouteMetadata";
+import { AuthReturnHandler } from "@/features/auth/components/AuthReturnHandler";
 
 const loadWhenIdle = <T,>(loader: () => Promise<T>): Promise<T> =>
   new Promise((resolve, reject) => {
@@ -62,6 +63,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <AuthReturnHandler />
           <RouteMetadata />
           <Suspense fallback={<div className="min-h-screen bg-background" aria-busy="true" />}>
             <Routes>

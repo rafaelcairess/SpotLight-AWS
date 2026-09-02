@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
+  buildPublicFunctionUrl,
   buildSafeRedirect,
   clearNonceCookie,
   decodeOAuthState,
@@ -8,6 +9,7 @@ import {
   oauthNonceCookies,
   oauthSecurityHeaders,
 } from "../_shared/oauth-security.ts";
+import { resolvePrimarySiteOrigin } from "../_shared/origin-security.ts";
 
 /**
  * psn-auth-callback
@@ -48,10 +50,13 @@ serve(async (req) => {
   if (url.search.length > 8192) {
     return json(414, { error: "request_too_large" });
   }
-  const fallbackSite =
-    Deno.env.get("SITE_URL") ||
-    Deno.env.get("PUBLIC_SITE_URL") ||
-    "https://spot-light-xi.vercel.app";
+  const fallbackSite = resolvePrimarySiteOrigin(
+    Deno.env.get("SITE_URL"),
+    Deno.env.get("PUBLIC_SITE_URL"),
+  );
+  if (!fallbackSite) {
+    return json(500, { error: "server_not_configured" });
+  }
 
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
@@ -81,7 +86,12 @@ serve(async (req) => {
   );
   // ───────────────────────────────────────────────────────────────
 
-  const callbackUrl = `${url.origin}/functions/v1/psn-auth-callback`;
+  let callbackUrl: string;
+  try {
+    callbackUrl = buildPublicFunctionUrl(SUPABASE_URL, "psn-auth-callback").toString();
+  } catch {
+    return json(500, { error: "server_not_configured" });
+  }
 
   // ── Troca code por tokens PSN ───────────────────────────────────
   const tokenRes = await fetch("https://ca.account.sony.com/api/authz/v3/oauth/token", {
@@ -204,7 +214,7 @@ serve(async (req) => {
   }
 
   // Dispara sync de troféus em background
-  const syncUrl = `${url.origin}/functions/v1/sync-psn-trophies`;
+  const syncUrl = buildPublicFunctionUrl(SUPABASE_URL, "sync-psn-trophies").toString();
   fetch(syncUrl, {
     method: "POST",
     headers: {

@@ -1,9 +1,12 @@
-const LEGACY_SITE_ORIGIN = "https://spot-light-xi.vercel.app";
+const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
 
 const parseHttpOrigin = (value: string): string | null => {
   try {
     const url = new URL(value.trim());
-    if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+    const isLocalHttp = url.protocol === "http:" && LOOPBACK_HOSTS.has(url.hostname);
+    if (url.protocol !== "https:" && !isLocalHttp) return null;
+    if (url.username || url.password || url.search || url.hash || url.pathname !== "/") return null;
+    if (url.protocol === "https:" && url.port) return null;
     return url.origin;
   } catch {
     return null;
@@ -11,7 +14,7 @@ const parseHttpOrigin = (value: string): string | null => {
 };
 
 export const resolvePrimarySiteOrigin = (siteUrl?: string | null, publicSiteUrl?: string | null) =>
-  parseHttpOrigin(siteUrl || "") || parseHttpOrigin(publicSiteUrl || "") || LEGACY_SITE_ORIGIN;
+  parseHttpOrigin(siteUrl || "") || parseHttpOrigin(publicSiteUrl || "") || "";
 
 export const parseAllowedSiteOrigins = (
   configuredOrigins: string | null | undefined,

@@ -1,10 +1,12 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import {
+  buildPublicFunctionUrl,
   buildSafeRedirect,
   oauthNonceCookies,
   oauthSecurityHeaders,
   setNonceCookie,
 } from "../_shared/oauth-security.ts";
+import { resolvePrimarySiteOrigin } from "../_shared/origin-security.ts";
 
 /**
  * xbox-auth-start
@@ -27,19 +29,31 @@ serve((req) => {
   }
 
   const XBOX_CLIENT_ID = Deno.env.get("XBOX_CLIENT_ID") || "";
+  const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
   if (!XBOX_CLIENT_ID) {
     return new Response(JSON.stringify({ error: "xbox_not_configured" }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...oauthSecurityHeaders },
     });
   }
+  if (!SUPABASE_URL) {
+    return new Response(JSON.stringify({ error: "server_not_configured" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...oauthSecurityHeaders },
+    });
+  }
 
   const url = new URL(req.url);
-  const origin = url.origin;
-  const fallbackSite =
-    Deno.env.get("SITE_URL") ||
-    Deno.env.get("PUBLIC_SITE_URL") ||
-    "https://spot-light-xi.vercel.app";
+  const fallbackSite = resolvePrimarySiteOrigin(
+    Deno.env.get("SITE_URL"),
+    Deno.env.get("PUBLIC_SITE_URL"),
+  );
+  if (!fallbackSite) {
+    return new Response(JSON.stringify({ error: "server_not_configured" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...oauthSecurityHeaders },
+    });
+  }
 
   const requestedRedirect = url.searchParams.get("redirect");
   const safeRedirect = buildSafeRedirect(
@@ -52,7 +66,15 @@ serve((req) => {
   // Nonce CSRF
   const nonce = crypto.randomUUID();
 
-  const callbackUrl = `${origin}/functions/v1/xbox-auth-callback`;
+  let callbackUrl: string;
+  try {
+    callbackUrl = buildPublicFunctionUrl(SUPABASE_URL, "xbox-auth-callback").toString();
+  } catch {
+    return new Response(JSON.stringify({ error: "server_not_configured" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...oauthSecurityHeaders },
+    });
+  }
 
   const params = new URLSearchParams({
     client_id: XBOX_CLIENT_ID,

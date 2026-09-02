@@ -1,26 +1,26 @@
-# Migração progressiva do SpotLight para AWS
+# SpotLight na AWS
 
 ## Objetivo e estado atual
 
-O SpotLight original continua publicado na Vercel e conectado ao projeto Supabase
-existente. Este repositório preserva o histórico da aplicação e prepara uma migração
-por camadas, sem interromper a demonstração estável.
+O frontend oficial do SpotLight está publicado na AWS e continua conectado ao projeto
+Supabase existente. Este repositório preserva o histórico da aplicação e prepara a
+migração futura do backend por camadas.
 
 ```text
-Versão estável                 Fase 1 preparada neste repositório
-
-Usuário                       Usuário
-  ↓                             ↓
-Vercel                        CloudFront (a criar)
-  ↓                             ↓
-React/Vite                    S3 privado (a criar)
-  ↓                             ↓
-Supabase                      React/Vite
-                                ↓
-                              Supabase atual
+Usuário
+  ↓
+spotlight.rafaelcpires.abrdns.com
+  ↓
+CloudFront
+  ↓
+S3
+  ↓
+React/Vite
+  ↓
+Supabase atual
 ```
 
-Nenhum recurso AWS e nenhuma Edge Function foram implantados nesta fase. O backend
+A aplicação está disponível em `https://spotlight.rafaelcpires.abrdns.com`. O backend
 ASP.NET Core e seu Dockerfile permanecem no código para etapas futuras, mas Docker não
 é necessário para servir os arquivos estáticos produzidos pelo Vite.
 
@@ -30,7 +30,7 @@ Use Node.js 20 e configure as variáveis públicas em `.env.local`, que não dev
 versionado:
 
 ```dotenv
-VITE_SITE_URL=http://localhost:8080
+VITE_SITE_URL=https://spotlight.rafaelcpires.abrdns.com
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
 VITE_API_URL=
@@ -46,9 +46,12 @@ npm run build
 ```
 
 O resultado fica em `dist/` e contém somente arquivos estáticos. Antes da publicação,
-substitua `VITE_SITE_URL` pelo domínio fornecido pelo CloudFront e gere o build novamente.
+use `VITE_SITE_URL=https://spotlight.rafaelcpires.abrdns.com` e gere o build novamente.
 
-## Próxima aula: S3 e CloudFront
+## Referência da configuração S3 e CloudFront
+
+A infraestrutura abaixo já está publicada e não será alterada nesta correção de
+autenticação. O checklist permanece como referência para auditoria e reconstrução futura.
 
 1. Criar alertas no AWS Budgets antes dos recursos, por exemplo US$ 5 e US$ 10.
 2. Criar um bucket S3 com Block Public Access habilitado; não ativar website hosting.
@@ -61,7 +64,7 @@ substitua `VITE_SITE_URL` pelo domínio fornecido pelo CloudFront e gere o build
    `/u/usuario`, para `/index.html`, mas preserva caminhos de assets como
    `/assets/app.js` para que arquivos inexistentes continuem retornando erro real.
 7. Criar uma Response Headers Policy com os headers abaixo e associá-la ao behavior.
-8. Enviar o conteúdo de `dist/` ao bucket e testar primeiro pelo domínio CloudFront.
+8. Enviar o conteúdo de `dist/` ao bucket e testar pelo domínio oficial.
 
 Headers mínimos da política:
 
@@ -82,24 +85,53 @@ assets antigos. A automação de upload e invalidação será feita somente na f
 
 ## Compatibilidade com o Supabase
 
-O código das Edge Functions aceita uma lista exata e configurável de origens. Quando o
-domínio CloudFront existir, configure no Supabase sem remover a origem da Vercel:
+O código das Edge Functions aceita uma lista exata e configurável de origens. Em
+produção, configure somente o domínio oficial:
 
 ```dotenv
-PUBLIC_SITE_URL=https://spot-light-xi.vercel.app
-ALLOWED_SITE_ORIGINS=https://spot-light-xi.vercel.app,https://SEU_DOMINIO.cloudfront.net
+PUBLIC_SITE_URL=https://spotlight.rafaelcpires.abrdns.com
+ALLOWED_SITE_ORIGINS=https://spotlight.rafaelcpires.abrdns.com
+ALLOW_LOCAL_REDIRECTS=false
 ```
 
-Também inclua o domínio CloudFront em **Authentication → URL Configuration → Redirect
-URLs**. `PUBLIC_SITE_URL` continua sendo o fallback principal; `ALLOWED_SITE_ORIGINS`
-permite que login Steam, Xbox, PSN e chamadas CORS retornem para qualquer um dos dois
-frontends. As funções só devem ser implantadas depois dessa configuração e de uma revisão
-do diff.
+`PUBLIC_SITE_URL` é a origem principal; `ALLOWED_SITE_ORIGINS` permite que login Steam,
+Xbox, PSN e chamadas CORS retornem somente para o frontend oficial. A ausência de
+`SITE_URL` e `PUBLIC_SITE_URL` é tratada como erro de configuração, sem fallback embutido.
+
+### Autenticação e redirects
+
+Mantenha `https://spotlight.rafaelcpires.abrdns.com` como **Site URL** em
+**Authentication → URL Configuration** e confirme estas **Redirect URLs** exatas:
+
+```text
+https://spotlight.rafaelcpires.abrdns.com/
+https://spotlight.rafaelcpires.abrdns.com/?auth_mode=reset
+```
+
+O frontend calcula o retorno usando `window.location.origin`, enquanto o servidor exige
+correspondência exata com a allowlist. Confirmação de
+cadastro, Google e logins de plataforma retornam para `/`; recuperação de senha retorna
+para `/?auth_mode=reset`. Depois que o cliente Supabase consome a sessão, o React Router
+navega internamente para `/auth?mode=reset`. Assim o callback não depende de abrir
+diretamente a rota `/auth`, que ainda retorna 403 sem o rewrite SPA no CloudFront.
+
+Nos templates **Confirm signup** e **Reset password**, use `{{ .ConfirmationURL }}` e não
+monte links com `{{ .SiteURL }}` ou um domínio fixo. Em caso de cadastro concluído sem
+recebimento do e-mail, verifique primeiro **Authentication → Users** e **Auth Logs**: o
+Supabase pode ocultar que um endereço já existe e não reenviar a confirmação. Para um
+endereço realmente novo, confira SMTP, destinatários autorizados, rate limits e spam.
+
+O Steam OpenID usa `SUPABASE_URL` para montar uma URL pública HTTPS estável em
+`return_to` e `realm`. O nonce continua vinculado ao cookie seguro de curta duração.
+Alterar um arquivo em `_shared` não atualiza automaticamente as funções já publicadas;
+todas as funções que importam os helpers compartilhados precisam ser republicadas.
 
 Checklist funcional para a publicação futura:
 
 - abrir `/`, `/game/123`, `/u/usuario` e atualizar cada rota diretamente;
-- entrar com e-mail/senha e Google;
+- cadastrar com um endereço novo, confirmar pela raiz e entrar com e-mail/senha;
+- recuperar senha pela raiz e concluir a navegação interna para `/auth?mode=reset`;
+- entrar com Google no domínio oficial;
 - validar os retornos de Steam, Xbox e PSN;
 - consultar jogos, sincronizar horas e excluir uma conta de teste;
 - confirmar que uma origem não cadastrada não recebe `Access-Control-Allow-Origin`;

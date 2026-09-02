@@ -7,12 +7,20 @@ import {
   minutesToHours,
   parseSteamInput,
 } from "../../supabase/functions/_shared/steam-sync";
-import { buildSafeRedirect } from "../../supabase/functions/_shared/oauth-security";
+import {
+  buildPublicFunctionUrl,
+  buildSafeRedirect,
+  buildSteamCallbackUrl,
+  isExpectedSteamReturnTo,
+  parseSteamClaimedId,
+} from "../../supabase/functions/_shared/oauth-security";
 import {
   buildCorsHeaders,
   parseAllowedSiteOrigins,
   resolveAllowedOrigin,
+  resolvePrimarySiteOrigin,
 } from "../../supabase/functions/_shared/origin-security";
+import { buildAuthReturnUrl } from "../features/auth/authRedirects";
 
 const workspaceFile = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8");
 
@@ -137,8 +145,30 @@ describe("RLS privacy contract", () => {
 });
 
 describe("OAuth boundary contract", () => {
+  const officialSite = "https://spotlight.rafaelcpires.abrdns.com";
+  const externalSite = "https://external.example";
+  const supabaseUrl = "https://project-ref.supabase.co";
+
+  it("builds browser auth returns from the runtime origin and lands recovery on the root", () => {
+    expect(buildAuthReturnUrl(officialSite)).toBe(`${officialSite}/`);
+    expect(buildAuthReturnUrl(externalSite)).toBe(`${externalSite}/`);
+    expect(buildAuthReturnUrl(officialSite, "reset")).toBe(`${officialSite}/?auth_mode=reset`);
+  });
+
+  it("lets Supabase consume callback tokens before routing recovery inside the SPA", () => {
+    const context = workspaceFile("src/contexts/AuthContext.tsx");
+    const authPage = workspaceFile("src/features/auth/pages/Auth.tsx");
+    const returnHandler = workspaceFile("src/features/auth/components/AuthReturnHandler.tsx");
+
+    expect(context).toContain("emailRedirectTo: getAuthReturnUrl()");
+    expect(context).toContain('redirectTo: getAuthReturnUrl("reset")');
+    expect(authPage).not.toContain("exchangeCodeForSession");
+    expect(returnHandler).toContain('mode !== "reset" || loading');
+    expect(returnHandler).toContain('session ? "/auth?mode=reset" : "/auth?mode=login"');
+  });
+
   it("allows localhost redirects only behind an explicit server flag", () => {
-    const fallback = "https://spot-light-xi.vercel.app";
+    const fallback = officialSite;
 
     expect(buildSafeRedirect("http://localhost:8080/auth", fallback)).toBe(`${fallback}/`);
     expect(buildSafeRedirect("http://localhost:8080/auth", fallback, "", true)).toBe(
@@ -146,17 +176,59 @@ describe("OAuth boundary contract", () => {
     );
   });
 
-  it("allows Vercel and CloudFront without accepting lookalike origins", () => {
-    const fallback = "https://spot-light-xi.vercel.app";
-    const cloudFront = "https://d1234567890.cloudfront.net";
-    const configured = `${fallback},${cloudFront}`;
+  it("allows only the official site without accepting lookalike origins", () => {
+    const configured = officialSite;
 
-    expect(buildSafeRedirect(`${cloudFront}/auth?mode=login`, fallback, configured)).toBe(
-      `${cloudFront}/auth?mode=login`,
+    expect(buildSafeRedirect(`${officialSite}/auth?mode=login`, officialSite, configured)).toBe(
+      `${officialSite}/auth?mode=login`,
     );
     expect(
-      buildSafeRedirect("https://spot-light-xi.vercel.app.evil.example", fallback, configured),
-    ).toBe(`${fallback}/`);
+      buildSafeRedirect(
+        "https://spotlight.rafaelcpires.abrdns.com.evil.example",
+        officialSite,
+        configured,
+      ),
+    ).toBe(`${officialSite}/`);
+    expect(buildSafeRedirect(`${officialSite}:444/auth`, officialSite, configured)).toBe(
+      `${officialSite}/`,
+    );
+    expect(
+      buildSafeRedirect("https://user@spotlight.rafaelcpires.abrdns.com", officialSite, configured),
+    ).toBe(`${officialSite}/`);
+    expect(buildSafeRedirect(`${externalSite}/auth`, officialSite, configured)).toBe(
+      `${officialSite}/`,
+    );
+  });
+
+  it("uses the public HTTPS Supabase URL for OAuth callbacks", () => {
+    expect(buildPublicFunctionUrl(supabaseUrl, "steam-auth-callback").toString()).toBe(
+      `${supabaseUrl}/functions/v1/steam-auth-callback`,
+    );
+    expect(() =>
+      buildPublicFunctionUrl("http://project-ref.supabase.co", "steam-auth-callback"),
+    ).toThrowError("invalid_supabase_url");
+    expect(() =>
+      buildPublicFunctionUrl(`${supabaseUrl}/unexpected`, "steam-auth-callback"),
+    ).toThrowError("invalid_supabase_url");
+  });
+
+  it("accepts only exact Steam claimed IDs and exact return_to values", () => {
+    const steamId = "76561198000000000";
+    expect(parseSteamClaimedId(`http://steamcommunity.com/openid/id/${steamId}`)).toBe(steamId);
+    expect(parseSteamClaimedId(`https://steamcommunity.com/openid/id/${steamId}`)).toBe(steamId);
+    expect(
+      parseSteamClaimedId(`https://steamcommunity.com.evil.example/openid/id/${steamId}`),
+    ).toBeNull();
+    expect(parseSteamClaimedId(`https://steamcommunity.com/openid/id/${steamId}/`)).toBeNull();
+
+    const callback = buildSteamCallbackUrl(supabaseUrl, `${officialSite}/`, "nonce-123");
+    expect(
+      isExpectedSteamReturnTo(callback.toString(), supabaseUrl, `${officialSite}/`, "nonce-123"),
+    ).toBe(true);
+    callback.searchParams.set("redirect", `${externalSite}/`);
+    expect(
+      isExpectedSteamReturnTo(callback.toString(), supabaseUrl, `${officialSite}/`, "nonce-123"),
+    ).toBe(false);
   });
 
   it("requires GET and validates the complete Steam OpenID assertion", () => {
@@ -165,8 +237,24 @@ describe("OAuth boundary contract", () => {
     expect(start).toContain('req.method !== "GET"');
     expect(callback).toContain('req.method !== "GET"');
     expect(callback).toContain('opEndpoint !== "https://steamcommunity.com/openid/login"');
-    expect(callback).toContain("assertedReturnTo.searchParams.get");
+    expect(callback).toContain("isExpectedSteamReturnTo");
+    expect(callback).toContain("parseSteamClaimedId");
     expect(callback).toContain("identity !== claimedId");
+  });
+
+  it("does not embed a legacy hosting origin as an OAuth server fallback", () => {
+    const files = [
+      "supabase/functions/_shared/origin-security.ts",
+      "supabase/functions/steam-auth-start/index.ts",
+      "supabase/functions/steam-auth-callback/index.ts",
+      "supabase/functions/xbox-auth-start/index.ts",
+      "supabase/functions/xbox-auth-callback/index.ts",
+      "supabase/functions/psn-auth-start/index.ts",
+      "supabase/functions/psn-auth-callback/index.ts",
+    ];
+    for (const file of files) {
+      expect(workspaceFile(file)).not.toContain("LEGACY_SITE_ORIGIN");
+    }
   });
 
   it("uses the supported Auth admin REST lookup in the PSN callback", () => {
@@ -176,30 +264,38 @@ describe("OAuth boundary contract", () => {
   });
 });
 
-describe("multi-origin CORS contract", () => {
-  const primary = "https://spot-light-xi.vercel.app";
-  const cloudFront = "https://d1234567890.cloudfront.net";
-  const configured = `${primary},${cloudFront},not-a-url`;
+describe("configured-origin CORS contract", () => {
+  const primary = "https://spotlight.rafaelcpires.abrdns.com";
+  const secondary = "https://preview.example";
+  const configured = `${primary},${secondary},not-a-url`;
 
   it("normalizes and deduplicates configured origins", () => {
-    expect(parseAllowedSiteOrigins(`${configured},${cloudFront}/path`, primary)).toEqual([
+    expect(parseAllowedSiteOrigins(`${configured},${secondary}/path`, primary)).toEqual([
       primary,
-      cloudFront,
+      secondary,
+    ]);
+  });
+
+  it("fails closed without a configured primary origin", () => {
+    expect(resolvePrimarySiteOrigin(undefined, undefined)).toBe("");
+    expect(resolvePrimarySiteOrigin(`${primary}/path`, secondary)).toBe(secondary);
+    expect(parseAllowedSiteOrigins(`${secondary}/path,${secondary}:444`, primary)).toEqual([
+      primary,
     ]);
   });
 
   it("reflects only an exact allowed origin and varies the cache by Origin", () => {
     const allowed = parseAllowedSiteOrigins(configured, primary);
-    expect(resolveAllowedOrigin(cloudFront, allowed)).toBe(cloudFront);
-    expect(resolveAllowedOrigin(`${cloudFront}.evil.example`, allowed)).toBeNull();
-    expect(resolveAllowedOrigin(`${cloudFront}/path`, allowed)).toBeNull();
+    expect(resolveAllowedOrigin(secondary, allowed)).toBe(secondary);
+    expect(resolveAllowedOrigin(`${secondary}.evil.example`, allowed)).toBeNull();
+    expect(resolveAllowedOrigin(`${secondary}/path`, allowed)).toBeNull();
 
-    const trustedHeaders = buildCorsHeaders(cloudFront, configured, primary);
-    expect(trustedHeaders["Access-Control-Allow-Origin"]).toBe(cloudFront);
+    const trustedHeaders = buildCorsHeaders(secondary, configured, primary);
+    expect(trustedHeaders["Access-Control-Allow-Origin"]).toBe(secondary);
     expect(trustedHeaders["Access-Control-Allow-Methods"]).toBe("POST, OPTIONS");
     expect(trustedHeaders.Vary).toBe("Origin");
 
-    const untrustedHeaders = buildCorsHeaders(`${cloudFront}.evil.example`, configured, primary);
+    const untrustedHeaders = buildCorsHeaders(`${secondary}.evil.example`, configured, primary);
     expect(untrustedHeaders).not.toHaveProperty("Access-Control-Allow-Origin");
   });
 });
