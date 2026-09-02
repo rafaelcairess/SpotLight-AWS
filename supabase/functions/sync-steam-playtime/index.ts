@@ -2,18 +2,7 @@ import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { isSteamId64, minutesToHours } from "../_shared/steam-sync.ts";
 import { consumeUserRateLimit } from "../_shared/rate-limit.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin":
-    Deno.env.get("PUBLIC_SITE_URL") || "https://spot-light-xi.vercel.app",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
-const json = (status: number, body: Record<string, unknown>) =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json", ...corsHeaders },
-  });
+import { buildCorsHeaders, resolvePrimarySiteOrigin } from "../_shared/origin-security.ts";
 
 const fetchJson = async (url: string) => {
   const res = await fetch(url);
@@ -22,6 +11,21 @@ const fetchJson = async (url: string) => {
 };
 
 serve(async (req) => {
+  const primarySiteOrigin = resolvePrimarySiteOrigin(
+    Deno.env.get("SITE_URL"),
+    Deno.env.get("PUBLIC_SITE_URL"),
+  );
+  const corsHeaders = buildCorsHeaders(
+    req.headers.get("Origin"),
+    Deno.env.get("ALLOWED_SITE_ORIGINS"),
+    primarySiteOrigin,
+  );
+  const json = (status: number, body: Record<string, unknown>) =>
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }

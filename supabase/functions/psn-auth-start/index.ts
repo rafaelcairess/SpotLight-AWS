@@ -44,7 +44,12 @@ serve((req) => {
     "https://spot-light-xi.vercel.app";
 
   const requestedRedirect = url.searchParams.get("redirect");
-  const safeRedirect = buildSafeRedirect(requestedRedirect, fallbackSite);
+  const safeRedirect = buildSafeRedirect(
+    requestedRedirect,
+    fallbackSite,
+    Deno.env.get("ALLOWED_SITE_ORIGINS") || "",
+    Deno.env.get("ALLOW_LOCAL_REDIRECTS") === "true",
+  );
 
   // Nonce CSRF
   const nonce = crypto.randomUUID();

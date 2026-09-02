@@ -1,3 +1,5 @@
+import { parseAllowedSiteOrigins } from "./origin-security.ts";
+
 const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
 
 export const oauthSecurityHeaders = {
@@ -22,18 +24,23 @@ const parseHttpUrl = (value: string): URL | null => {
 };
 
 /**
- * OAuth may return only to the configured site origin. Localhost is disabled
- * in deployed functions unless ALLOW_LOCAL_REDIRECTS=true is explicitly set.
+ * OAuth may return only to one of the configured site origins. Localhost is
+ * disabled in deployed functions unless ALLOW_LOCAL_REDIRECTS=true is passed.
  */
-export const buildSafeRedirect = (value: string | null, fallback: string): string => {
+export const buildSafeRedirect = (
+  value: string | null,
+  fallback: string,
+  configuredOrigins = "",
+  localRedirectsEnabled = false,
+): string => {
   const fallbackUrl = parseHttpUrl(fallback);
   if (!fallbackUrl) throw new Error("invalid_site_url");
 
   const target = value ? parseHttpUrl(value) : null;
   if (!target) return fallbackUrl.toString();
-  if (target.origin === fallbackUrl.origin) return target.toString();
+  const allowedOrigins = parseAllowedSiteOrigins(configuredOrigins, fallbackUrl.origin);
+  if (allowedOrigins.includes(target.origin)) return target.toString();
 
-  const localRedirectsEnabled = Deno.env.get("ALLOW_LOCAL_REDIRECTS") === "true";
   if (localRedirectsEnabled && target.protocol === "http:" && LOOPBACK_HOSTS.has(target.hostname)) {
     return target.toString();
   }

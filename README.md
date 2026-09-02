@@ -1,6 +1,6 @@
 <div align="center">
 
-# SpotLight
+# SpotLight — AWS Migration
 
 ### Sua biblioteca, suas conquistas e sua história gamer em um só perfil.
 
@@ -8,11 +8,11 @@
   <a href="https://spot-light-xi.vercel.app">
     <img alt="SpotLight online" src="https://img.shields.io/badge/PROJETO-ONLINE-22c55e?style=for-the-badge&logo=vercel&logoColor=white">
   </a>
-  <a href="https://github.com/rafaelcairess/SpotLight/actions/workflows/ci.yml">
-    <img alt="Status da CI" src="https://img.shields.io/github/actions/workflow/status/rafaelcairess/SpotLight/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI">
+  <a href="https://github.com/rafaelcairess/SpotLight-AWS/actions/workflows/ci.yml">
+    <img alt="Status da CI" src="https://img.shields.io/github/actions/workflow/status/rafaelcairess/SpotLight-AWS/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI">
   </a>
-  <a href="https://github.com/rafaelcairess/SpotLight/commits/main">
-    <img alt="Último commit" src="https://img.shields.io/github/last-commit/rafaelcairess/SpotLight?style=for-the-badge&logo=github&label=LAST%20COMMIT">
+  <a href="https://github.com/rafaelcairess/SpotLight-AWS/commits/main">
+    <img alt="Último commit" src="https://img.shields.io/github/last-commit/rafaelcairess/SpotLight-AWS?style=for-the-badge&logo=github&label=LAST%20COMMIT">
   </a>
 </p>
 
@@ -38,6 +38,12 @@
 </div>
 
 ## Sobre o projeto
+
+Este repositório acompanha a migração progressiva do SpotLight para a AWS. A
+[versão original](https://github.com/rafaelcairess/SpotLight), publicada na Vercel e
+conectada ao Supabase, continua sendo a demonstração estável. Nesta primeira fase,
+somente o frontend foi preparado para hospedagem estática em S3 e CloudFront; nenhum
+recurso AWS foi criado.
 
 Steam, Xbox e PlayStation guardam partes diferentes da nossa vida nos games. Para lembrar o que jogou, quanto tempo investiu ou quais jogos completou, normalmente é preciso consultar vários perfis.
 
@@ -87,7 +93,7 @@ Além da biblioteca pessoal, o SpotLight oferece busca, rankings, promoções, r
 Usuário
    │
    ▼
-React + TypeScript (Vercel)
+React + TypeScript (build estático para S3/CloudFront)
    │
    ├── Supabase Auth
    ├── PostgreSQL + Row Level Security
@@ -99,14 +105,14 @@ React + TypeScript (Vercel)
 
 O frontend é organizado por domínios de negócio. O acesso a dados fica em hooks reutilizáveis e o TanStack Query cuida de cache, mutations e invalidações. Operações que dependem de segredos são executadas nas Edge Functions, nunca no navegador.
 
-| Camada        | Tecnologias                               |
-| ------------- | ----------------------------------------- |
-| **Frontend**  | React 18, TypeScript, Vite e React Router |
-| **Interface** | Tailwind CSS, shadcn/ui e Radix UI        |
-| **Dados**     | TanStack Query, Supabase e PostgreSQL     |
-| **Backend**   | Supabase Edge Functions com Deno          |
-| **Qualidade** | Vitest, ESLint, Prettier e TypeScript     |
-| **Entrega**   | Vercel e GitHub Actions                   |
+| Camada        | Tecnologias                                 |
+| ------------- | ------------------------------------------- |
+| **Frontend**  | React 18, TypeScript, Vite e React Router   |
+| **Interface** | Tailwind CSS, shadcn/ui e Radix UI          |
+| **Dados**     | TanStack Query, Supabase e PostgreSQL       |
+| **Backend**   | Supabase Edge Functions com Deno            |
+| **Qualidade** | Vitest, ESLint, Prettier e TypeScript       |
+| **Entrega**   | AWS S3 e CloudFront (próxima etapa prática) |
 
 Uma API em **ASP.NET Core 8** também está sendo desenvolvida como base para uma migração gradual do backend. Ela já possui health check, autenticação JWT/JWKS e testes automatizados, mas ainda não faz parte do ambiente de produção.
 
@@ -126,6 +132,7 @@ Consulte a [política de segurança](SECURITY.md) para conhecer as versões supo
 
 - [Guia de contribuição](CONTRIBUTING.md)
 - [Arquitetura e organização do código](docs/ARCHITECTURE.md)
+- [Plano de migração para AWS](docs/aws-migration.md)
 - [API ASP.NET Core](backend/README.md)
 - [Política de segurança](SECURITY.md)
 

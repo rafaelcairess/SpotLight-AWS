@@ -1,11 +1,11 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { SITE_URL } from "@/config/runtimeEnv";
 
 const SITE_NAME = "SpotLight";
 const DEFAULT_DESCRIPTION =
   "Organize sua biblioteca, acompanhe conquistas e compartilhe sua história gamer.";
-const SITE_ORIGIN = "https://spot-light-xi.vercel.app";
-const DEFAULT_IMAGE = `${SITE_ORIGIN}/og.png`;
+const DEFAULT_IMAGE = `${SITE_URL}/og.png`;
 
 const routeMetadata: Array<{
   matches: (pathname: string) => boolean;
@@ -71,7 +71,7 @@ export function RouteMetadata() {
     setMeta('meta[name="description"]', description);
     setMeta('meta[property="og:title"]', title);
     setMeta('meta[property="og:description"]', description);
-    setMeta('meta[property="og:url"]', `${SITE_ORIGIN}${pathname}`);
+    setMeta('meta[property="og:url"]', `${SITE_URL}${pathname}`);
     setMeta('meta[property="og:image"]', DEFAULT_IMAGE);
     setMeta('meta[property="og:image:width"]', "1200");
     setMeta('meta[property="og:image:height"]', "630");
@@ -81,7 +81,7 @@ export function RouteMetadata() {
     setMeta('meta[name="twitter:image"]', DEFAULT_IMAGE);
     document
       .querySelector<HTMLLinkElement>('link[rel="canonical"]')
-      ?.setAttribute("href", `${SITE_ORIGIN}${pathname}`);
+      ?.setAttribute("href", `${SITE_URL}${pathname}`);
   }, [pathname]);
 
   return null;

@@ -7,6 +7,12 @@ import {
   minutesToHours,
   parseSteamInput,
 } from "../../supabase/functions/_shared/steam-sync";
+import { buildSafeRedirect } from "../../supabase/functions/_shared/oauth-security";
+import {
+  buildCorsHeaders,
+  parseAllowedSiteOrigins,
+  resolveAllowedOrigin,
+} from "../../supabase/functions/_shared/origin-security";
 
 const workspaceFile = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8");
 
@@ -132,10 +138,25 @@ describe("RLS privacy contract", () => {
 
 describe("OAuth boundary contract", () => {
   it("allows localhost redirects only behind an explicit server flag", () => {
-    const helper = workspaceFile("supabase/functions/_shared/oauth-security.ts");
-    expect(helper).toContain('Deno.env.get("ALLOW_LOCAL_REDIRECTS") === "true"');
-    expect(helper).toContain("target.origin === fallbackUrl.origin");
-    expect(helper).toContain("__Host-spotlight_steam_nonce");
+    const fallback = "https://spot-light-xi.vercel.app";
+
+    expect(buildSafeRedirect("http://localhost:8080/auth", fallback)).toBe(`${fallback}/`);
+    expect(buildSafeRedirect("http://localhost:8080/auth", fallback, "", true)).toBe(
+      "http://localhost:8080/auth",
+    );
+  });
+
+  it("allows Vercel and CloudFront without accepting lookalike origins", () => {
+    const fallback = "https://spot-light-xi.vercel.app";
+    const cloudFront = "https://d1234567890.cloudfront.net";
+    const configured = `${fallback},${cloudFront}`;
+
+    expect(buildSafeRedirect(`${cloudFront}/auth?mode=login`, fallback, configured)).toBe(
+      `${cloudFront}/auth?mode=login`,
+    );
+    expect(
+      buildSafeRedirect("https://spot-light-xi.vercel.app.evil.example", fallback, configured),
+    ).toBe(`${fallback}/`);
   });
 
   it("requires GET and validates the complete Steam OpenID assertion", () => {
@@ -147,17 +168,62 @@ describe("OAuth boundary contract", () => {
     expect(callback).toContain("assertedReturnTo.searchParams.get");
     expect(callback).toContain("identity !== claimedId");
   });
+
+  it("uses the supported Auth admin REST lookup in the PSN callback", () => {
+    const callback = workspaceFile("supabase/functions/psn-auth-callback/index.ts");
+    expect(callback).toContain("/auth/v1/admin/users?email=");
+    expect(callback).not.toContain("getUserByEmail");
+  });
 });
 
-describe("hosting security contract", () => {
-  it("serves runtime configuration as an external script with strict headers", () => {
-    const build = workspaceFile("scripts/prepare-sites-build.mjs");
+describe("multi-origin CORS contract", () => {
+  const primary = "https://spot-light-xi.vercel.app";
+  const cloudFront = "https://d1234567890.cloudfront.net";
+  const configured = `${primary},${cloudFront},not-a-url`;
+
+  it("normalizes and deduplicates configured origins", () => {
+    expect(parseAllowedSiteOrigins(`${configured},${cloudFront}/path`, primary)).toEqual([
+      primary,
+      cloudFront,
+    ]);
+  });
+
+  it("reflects only an exact allowed origin and varies the cache by Origin", () => {
+    const allowed = parseAllowedSiteOrigins(configured, primary);
+    expect(resolveAllowedOrigin(cloudFront, allowed)).toBe(cloudFront);
+    expect(resolveAllowedOrigin(`${cloudFront}.evil.example`, allowed)).toBeNull();
+    expect(resolveAllowedOrigin(`${cloudFront}/path`, allowed)).toBeNull();
+
+    const trustedHeaders = buildCorsHeaders(cloudFront, configured, primary);
+    expect(trustedHeaders["Access-Control-Allow-Origin"]).toBe(cloudFront);
+    expect(trustedHeaders["Access-Control-Allow-Methods"]).toBe("POST, OPTIONS");
+    expect(trustedHeaders.Vary).toBe("Origin");
+
+    const untrustedHeaders = buildCorsHeaders(`${cloudFront}.evil.example`, configured, primary);
+    expect(untrustedHeaders).not.toHaveProperty("Access-Control-Allow-Origin");
+  });
+});
+
+describe("AWS static hosting contract", () => {
+  it("uses build-time site metadata without a hosting worker", () => {
     const html = workspaceFile("index.html");
-    expect(html).toContain('<script src="/runtime-env.js"></script>');
-    expect(html).not.toContain("globalThis.__SPOTLIGHT_ENV__=");
-    expect(build).toContain('url.pathname === "/runtime-env.js"');
-    expect(build).toContain('"Content-Security-Policy"');
-    expect(build).toContain('"X-Frame-Options", "DENY"');
+    const vite = workspaceFile("vite.config.ts");
+    expect(html).toContain("%SPOTLIGHT_SITE_ORIGIN%");
+    expect(html).not.toContain("runtime-env.js");
+    expect(vite).toContain('outDir: "dist"');
+    expect(vite).toContain('env.VITE_SITE_URL || "http://localhost:8080"');
+  });
+
+  it("rewrites SPA routes while preserving asset requests", () => {
+    const source = workspaceFile("infra/cloudfront/spa-rewrite.js");
+    const handler = new Function(`${source}; return handler;`)() as (event: {
+      request: { uri: string };
+    }) => { uri: string };
+
+    expect(handler({ request: { uri: "/game/123" } }).uri).toBe("/index.html");
+    expect(handler({ request: { uri: "/u/usuario" } }).uri).toBe("/index.html");
+    expect(handler({ request: { uri: "/" } }).uri).toBe("/index.html");
+    expect(handler({ request: { uri: "/assets/missing.js" } }).uri).toBe("/assets/missing.js");
   });
 });
 

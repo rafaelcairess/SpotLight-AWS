@@ -73,7 +73,12 @@ serve(async (req) => {
       Deno.env.get("PUBLIC_SITE_URL") ||
       "https://spot-light-xi.vercel.app";
 
-    const safeRedirect = buildSafeRedirect(url.searchParams.get("redirect"), fallbackSite);
+    const safeRedirect = buildSafeRedirect(
+      url.searchParams.get("redirect"),
+      fallbackSite,
+      Deno.env.get("ALLOWED_SITE_ORIGINS") || "",
+      Deno.env.get("ALLOW_LOCAL_REDIRECTS") === "true",
+    );
 
     // ── Validação CSRF via nonce ──────────────────────────────────────
     const nonceFromUrl = url.searchParams.get("nonce");

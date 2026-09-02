@@ -73,7 +73,12 @@ serve(async (req) => {
     return json(403, { error: "csrf_nonce_mismatch" });
   }
 
-  const safeRedirect = buildSafeRedirect(decodedState.redirect, fallbackSite);
+  const safeRedirect = buildSafeRedirect(
+    decodedState.redirect,
+    fallbackSite,
+    Deno.env.get("ALLOWED_SITE_ORIGINS") || "",
+    Deno.env.get("ALLOW_LOCAL_REDIRECTS") === "true",
+  );
   // ───────────────────────────────────────────────────────────────
 
   const callbackUrl = `${url.origin}/functions/v1/xbox-auth-callback`;

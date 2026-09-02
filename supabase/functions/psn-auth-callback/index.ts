@@ -73,7 +73,12 @@ serve(async (req) => {
     return json(403, { error: "csrf_nonce_mismatch" });
   }
 
-  const safeRedirect = buildSafeRedirect(decodedState.redirect, fallbackSite);
+  const safeRedirect = buildSafeRedirect(
+    decodedState.redirect,
+    fallbackSite,
+    Deno.env.get("ALLOWED_SITE_ORIGINS") || "",
+    Deno.env.get("ALLOW_LOCAL_REDIRECTS") === "true",
+  );
   // ───────────────────────────────────────────────────────────────
 
   const callbackUrl = `${url.origin}/functions/v1/psn-auth-callback`;
@@ -132,12 +137,27 @@ serve(async (req) => {
   });
 
   const fakeEmail = `psn_${psnAccountId}@psn.local`;
+  const adminHeaders = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+    apikey: SUPABASE_SERVICE_ROLE_KEY,
+  };
 
   let userId: string | undefined;
 
-  const { data: existingUser } = await supabase.auth.admin.getUserByEmail(fakeEmail);
-  if (existingUser?.user?.id) {
-    userId = existingUser.user.id;
+  const listRes = await fetch(
+    `${SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(fakeEmail)}&page=1&per_page=1`,
+    { headers: adminHeaders },
+  );
+  const listData = await listRes.json();
+  const existingUser = listData?.users?.[0];
+
+  if (!listRes.ok) {
+    return json(502, { error: "user_lookup_failed" });
+  }
+
+  if (existingUser?.id) {
+    userId = existingUser.id;
   } else {
     const { data: createdUser, error: createError } = await supabase.auth.admin.createUser({
       email: fakeEmail,

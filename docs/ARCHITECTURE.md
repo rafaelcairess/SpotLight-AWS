@@ -7,7 +7,7 @@ alterar uma funcionalidade e atualize-o quando criar uma nova área.
 
 O SpotLight não é apenas um frontend. Ele tem três partes:
 
-1. `src/`: aplicação React publicada na Vercel.
+1. `src/`: aplicação React preparada para build estático e futura publicação em S3/CloudFront.
 2. `supabase/migrations/`: estrutura, funções SQL, permissões e políticas RLS.
 3. `supabase/functions/`: backend Deno executado como Edge Functions do Supabase.
 
