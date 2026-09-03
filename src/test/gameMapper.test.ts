@@ -36,4 +36,20 @@ describe("game data mapper", () => {
     const row = { app_id: 7, title: "Seven", image: null } as GameRow;
     expect(mapGameRows([row])).toEqual([expect.objectContaining({ app_id: 7, image: "" })]);
   });
+
+  it("decodes Steam HTML entities as plain display text", () => {
+    const row = {
+      app_id: 8,
+      title: "Tom &amp; Jerry",
+      image: null,
+      short_description: "Meet &quot;Pals&quot; and collect &#9733; rewards.",
+      developer: "Studio &lt;North&gt;",
+    } as GameRow;
+
+    expect(mapGameRow(row)).toMatchObject({
+      title: "Tom & Jerry",
+      short_description: 'Meet "Pals" and collect ★ rewards.',
+      developer: "Studio <North>",
+    });
+  });
 });

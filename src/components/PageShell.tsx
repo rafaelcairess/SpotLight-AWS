@@ -31,9 +31,8 @@ export function PageShell({ children, className, mainClassName, ambient = true }
       <Header />
       {ambient && (
         <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
-          <div className="absolute -left-48 -top-40 h-[34rem] w-[34rem] rounded-full bg-primary/[0.10] blur-[120px]" />
-          <div className="absolute -right-56 top-48 h-[32rem] w-[32rem] rounded-full bg-indigo-500/[0.07] blur-[130px]" />
-          <div className="premium-grid absolute inset-0 opacity-35" />
+          <div className="absolute -left-48 -top-40 h-[34rem] w-[34rem] rounded-full bg-primary/[0.07] blur-[130px]" />
+          <div className="premium-grid absolute inset-0 opacity-20" />
         </div>
       )}
       <main

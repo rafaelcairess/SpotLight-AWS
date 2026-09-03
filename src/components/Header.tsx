@@ -159,19 +159,19 @@ const Header = () => {
 
   const navLinkClass = (active: boolean) =>
     cn(
-      "inline-flex min-h-10 items-center rounded-lg px-3 text-sm font-medium transition-colors",
+      "inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium transition-colors",
       active
-        ? "bg-primary/10 text-primary shadow-[inset_0_0_0_1px_hsl(var(--primary)/0.12)]"
-        : "text-muted-foreground hover:bg-white/[0.05] hover:text-foreground",
+        ? "bg-primary/[0.09] text-primary"
+        : "text-muted-foreground hover:bg-white/[0.035] hover:text-foreground",
     );
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.07] bg-background/90 pt-[env(safe-area-inset-top)] backdrop-blur-2xl supports-[backdrop-filter]:bg-background/78">
-      <div className="mx-auto max-w-[1560px] px-4 sm:px-6 lg:px-8">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.07] bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/88">
+      <div className="mx-auto max-w-[1440px] px-3.5 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center gap-3 xl:h-[4.5rem]">
           <Link to="/" className="group flex shrink-0 items-center gap-2.5" aria-label="SpotLight">
             <div
-              className="relative h-10 w-10 overflow-hidden rounded-xl border border-primary/25 bg-primary/10 bg-center bg-no-repeat shadow-[0_0_28px_hsl(var(--primary)/0.18)] transition-transform duration-500 group-hover:scale-105"
+              className="relative h-10 w-10 overflow-hidden rounded-xl border border-primary/20 bg-primary/[0.08] bg-center bg-no-repeat transition-colors group-hover:border-primary/40"
               style={{ backgroundImage: `url(${logoSpotlight})`, backgroundSize: "230%" }}
               aria-hidden="true"
             />
@@ -181,7 +181,7 @@ const Header = () => {
           </Link>
 
           <nav
-            className="ml-2 hidden items-center gap-1 rounded-xl border border-white/[0.06] bg-white/[0.025] p-1 xl:flex"
+            className="ml-4 hidden items-center gap-1 xl:flex"
             aria-label={t("header.mainNavigation")}
           >
             {primaryLinks.map((link) => (
@@ -238,7 +238,7 @@ const Header = () => {
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder={t("header.searchPlaceholder")}
                 aria-label={t("header.searchPlaceholder")}
-                className="bg-white/[0.04] pl-10"
+                className="border-white/[0.08] bg-card/70 pl-10"
               />
             </div>
           </form>

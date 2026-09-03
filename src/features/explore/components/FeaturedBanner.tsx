@@ -1,5 +1,6 @@
-import { Info, Users, Star } from "lucide-react";
+import { Info, Star, UserPlus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { GameData } from "@/types/game";
 import { cn } from "@/lib/utils";
 import steamIcon from "@/assets/steam.png";
@@ -10,16 +11,18 @@ import { formatPlayers, getRatingColorClass } from "@/lib/format";
 interface FeaturedBannerProps {
   game: GameData;
   onExplore: () => void;
+  isAuthenticated?: boolean;
 }
 
-const FeaturedBanner = ({ game, onExplore }: FeaturedBannerProps) => {
+const FeaturedBanner = ({ game, onExplore, isAuthenticated = false }: FeaturedBannerProps) => {
   const { t } = useTranslation();
+  const Heading = isAuthenticated ? "h2" : "h1";
   const handleOpenSteam = () => {
     window.open(getSteamStoreUrl(game.app_id), "_blank", "noopener,noreferrer");
   };
 
   return (
-    <div className="group relative min-h-[27rem] w-full overflow-hidden rounded-2xl border border-white/[0.12] bg-card shadow-[0_24px_70px_hsl(226_75%_2%/0.62)] sm:min-h-[30rem] sm:rounded-[1.75rem] lg:min-h-[30rem] 2xl:min-h-0 2xl:aspect-[23/9]">
+    <div className="group relative min-h-[23rem] w-full overflow-hidden rounded-2xl border border-white/[0.1] bg-card shadow-[0_20px_55px_hsl(226_75%_2%/0.46)] sm:min-h-[25rem] lg:min-h-[26rem]">
       <img
         src={game.image}
         alt=""
@@ -29,12 +32,11 @@ const FeaturedBanner = ({ game, onExplore }: FeaturedBannerProps) => {
         decoding="async"
       />
 
-      <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/76 to-background/15" />
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/25 to-black/25" />
-      <div className="absolute inset-0 bg-[linear-gradient(120deg,hsl(var(--primary)/0.15),transparent_38%)] opacity-70" />
+      <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/72 to-background/10" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-black/20" />
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/35 to-transparent" />
 
-      <div className="relative flex min-h-[27rem] max-w-3xl flex-col justify-end p-5 sm:min-h-[30rem] sm:p-9 md:p-12 lg:min-h-[30rem] lg:p-14 xl:p-16 2xl:h-full 2xl:min-h-0">
+      <div className="relative flex min-h-[23rem] max-w-3xl flex-col justify-end p-5 sm:min-h-[25rem] sm:p-8 lg:min-h-[26rem] lg:p-10 xl:p-12">
         <div className="mb-4 flex min-w-0 items-center gap-2 animate-fade-in sm:mb-5">
           <span className="rounded-full border border-primary/25 bg-primary/15 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary backdrop-blur-md">
             {t("featuredBanner.badge")}
@@ -46,9 +48,9 @@ const FeaturedBanner = ({ game, onExplore }: FeaturedBannerProps) => {
           )}
         </div>
 
-        <h1 className="mb-4 line-clamp-3 break-words font-logo text-[2.35rem] font-extrabold leading-[0.98] tracking-[-0.05em] text-white [text-wrap:balance] animate-fade-in-up sm:text-5xl md:text-6xl lg:text-7xl xl:text-[5rem]">
+        <Heading className="mb-4 line-clamp-2 break-words font-logo text-[2.25rem] font-extrabold leading-[1] tracking-[-0.045em] text-white [text-wrap:balance] animate-fade-in-up sm:text-5xl lg:text-6xl xl:text-[4rem]">
           {game.title}
-        </h1>
+        </Heading>
 
         <div className="mb-4 flex flex-wrap items-center gap-2 text-xs animate-fade-in sm:mb-5 sm:gap-5 sm:text-sm">
           {game.activePlayers && (
@@ -82,21 +84,44 @@ const FeaturedBanner = ({ game, onExplore }: FeaturedBannerProps) => {
           </p>
         )}
 
-        <div className="grid w-full grid-cols-1 gap-2.5 animate-fade-in-up min-[390px]:grid-cols-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:gap-3">
+        <div className="flex w-full flex-col gap-2.5 animate-fade-in-up sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+          {!isAuthenticated ? (
+            <Button size="lg" className="w-full gap-2 px-5 sm:w-auto sm:px-7" asChild>
+              <Link to="/auth?mode=signup">
+                <UserPlus className="h-4 w-4" />
+                {t("featuredBanner.createAccount")}
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              size="lg"
+              className="w-full gap-2 px-5 sm:w-auto sm:px-7"
+              onClick={onExplore}
+            >
+              <Info className="h-4 w-4" />
+              {t("featuredBanner.moreDetails")}
+            </Button>
+          )}
+
+          {!isAuthenticated ? (
+            <Button
+              type="button"
+              size="lg"
+              variant="secondary"
+              className="w-full gap-2 border border-white/[0.1] bg-white/[0.08] px-5 sm:w-auto"
+              onClick={onExplore}
+            >
+              <Info className="h-4 w-4" />
+              {t("featuredBanner.moreDetails")}
+            </Button>
+          ) : null}
+
           <Button
             type="button"
-            size="lg"
-            className="w-full gap-2 px-4 glow-primary sm:w-auto sm:px-7"
-            onClick={onExplore}
-          >
-            <Info className="h-4 w-4" />
-            {t("featuredBanner.moreDetails")}
-          </Button>
-          <Button
-            type="button"
-            size="lg"
-            variant="secondary"
-            className="w-full gap-2 border border-white/[0.12] bg-white/10 px-4 backdrop-blur-md hover:bg-white/15 sm:w-auto sm:px-7"
+            size={isAuthenticated ? "lg" : "sm"}
+            variant={isAuthenticated ? "secondary" : "ghost"}
+            className="w-full gap-2 px-4 sm:w-auto"
             onClick={handleOpenSteam}
           >
             <img src={steamIcon} alt="" className="h-4 w-4" />

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Clock3, Flame, Layers3, Orbit, Sparkles } from "lucide-react";
 import { PageContainer, PageShell } from "@/components/PageShell";
 import FeaturedBanner from "@/features/explore/components/FeaturedBanner";
+import PersonalHomePanel from "@/features/explore/components/PersonalHomePanel";
 import GameCard from "@/features/games/components/GameCard";
 import { GameGrid } from "@/features/games/components/GameGrid";
 import GameModal from "@/features/games/components/GameModal";
@@ -107,15 +108,55 @@ export default function Explore() {
 
   return (
     <PageShell mainClassName="pb-0">
-      <PageContainer as="section" className="mb-9 md:mb-14">
+      {user ? (
+        <PageContainer className="mb-6 md:mb-8">
+          <PersonalHomePanel onGameSelect={openGame} />
+        </PageContainer>
+      ) : null}
+
+      <PageContainer as="section" className="mb-10 md:mb-14">
         {featuredGame ? (
-          <FeaturedBanner game={featuredGame} onExplore={() => openGame(featuredGame)} />
+          <FeaturedBanner
+            game={featuredGame}
+            onExplore={() => openGame(featuredGame)}
+            isAuthenticated={Boolean(user)}
+          />
         ) : dailyFeaturedLoading || allGamesLoading ? (
           <LoadingSkeleton variant="banner" />
         ) : (
           <div className="text-center py-8 text-muted-foreground">{t("home.featuredEmpty")}</div>
         )}
       </PageContainer>
+
+      {user ? (
+        <PageContainer as="section" className="mb-11 md:mb-16">
+          <SectionHeader
+            title={t("home.recommendationsTitle")}
+            subtitle={t("home.recommendationsSubtitle")}
+            icon={Sparkles}
+          />
+          {recommendationsLoading ? (
+            <LoadingSkeleton variant="card" count={5} />
+          ) : recommendedGames.length === 0 ? (
+            <div className="rounded-xl border border-border/40 bg-card/40 p-6 text-muted-foreground">
+              {t("home.recommendationsEmpty")}
+            </div>
+          ) : (
+            <GameGrid
+              games={recommendedGames}
+              layout={catalogLayout}
+              onGameSelect={openGame}
+              getContextLabel={(game) =>
+                game.matchedTags.length
+                  ? t("home.recommendationReason", {
+                      tags: game.matchedTags.join(" • "),
+                    })
+                  : t("home.recommendationQualityReason")
+              }
+            />
+          )}
+        </PageContainer>
+      ) : null}
 
       <PageContainer as="section" className="mb-11 md:mb-20">
         <SectionHeader
@@ -188,36 +229,6 @@ export default function Explore() {
           <GameGrid games={newReleases} layout={catalogLayout} onGameSelect={openGame} />
         )}
       </PageContainer>
-
-      {user && (
-        <PageContainer as="section" className="mb-11 md:mb-20">
-          <SectionHeader
-            title={t("home.recommendationsTitle")}
-            subtitle={t("home.recommendationsSubtitle")}
-            icon={Sparkles}
-          />
-          {recommendationsLoading ? (
-            <LoadingSkeleton variant="card" count={5} />
-          ) : recommendedGames.length === 0 ? (
-            <div className="rounded-xl border border-border/40 bg-card/40 p-6 text-muted-foreground">
-              {t("home.recommendationsEmpty")}
-            </div>
-          ) : (
-            <GameGrid
-              games={recommendedGames}
-              layout={catalogLayout}
-              onGameSelect={openGame}
-              getContextLabel={(game) =>
-                game.matchedTags.length
-                  ? t("home.recommendationReason", {
-                      tags: game.matchedTags.join(" • "),
-                    })
-                  : t("home.recommendationQualityReason")
-              }
-            />
-          )}
-        </PageContainer>
-      )}
 
       <PageContainer as="section" className="mb-11 md:mb-20">
         <SectionHeader

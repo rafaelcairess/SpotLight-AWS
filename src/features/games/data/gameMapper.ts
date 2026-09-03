@@ -1,15 +1,16 @@
 import type { Database } from "@/integrations/supabase/types";
 import type { GameData } from "@/types/game";
+import { decodeHtmlEntities } from "@/lib/text";
 
 export type GameRow = Database["public"]["Tables"]["games"]["Row"];
 
 /** Single boundary between Supabase snake_case rows and the UI game model. */
 export const mapGameRow = (row: GameRow): GameData => ({
   app_id: row.app_id,
-  title: row.title,
+  title: decodeHtmlEntities(row.title),
   image: row.image || "",
-  short_description: row.short_description || undefined,
-  genre: row.genre || undefined,
+  short_description: row.short_description ? decodeHtmlEntities(row.short_description) : undefined,
+  genre: row.genre ? decodeHtmlEntities(row.genre) : undefined,
   tags: row.tags || undefined,
   activePlayers: row.active_players ?? undefined,
   communityRating: row.community_rating ?? undefined,
@@ -17,8 +18,8 @@ export const mapGameRow = (row: GameRow): GameData => ({
   priceOriginal: row.price_original || undefined,
   discountPercent: row.discount_percent ?? undefined,
   releaseDate: row.release_date || undefined,
-  developer: row.developer || undefined,
-  publisher: row.publisher || undefined,
+  developer: row.developer ? decodeHtmlEntities(row.developer) : undefined,
+  publisher: row.publisher ? decodeHtmlEntities(row.publisher) : undefined,
   platforms: row.platforms || undefined,
   backgroundImage: row.background_image || undefined,
   trailerUrl: row.trailer_url || undefined,
