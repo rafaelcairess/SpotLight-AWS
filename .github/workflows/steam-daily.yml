@@ -21,6 +21,27 @@ jobs:
           node-version: "20"
           cache: "npm"
 
+      - name: Validate required secrets
+        shell: bash
+        env:
+          STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          missing=()
+          for name in STEAM_API_KEY SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY; do
+            if [[ -z "${!name:-}" ]]; then
+              missing+=("$name")
+            fi
+          done
+
+          if (( ${#missing[@]} > 0 )); then
+            for name in "${missing[@]}"; do
+              echo "::error::Missing repository secret: $name"
+            done
+            exit 1
+          fi
+
       - name: Install dependencies
         run: npm ci
 
