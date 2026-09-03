@@ -74,18 +74,30 @@ const CategoryCard = ({ category, index = 0, compact = false }: CategoryCardProp
       className={cn(
         "group relative block overflow-hidden rounded-2xl",
         compact ? "min-h-36 sm:min-h-40" : "aspect-[4/3] sm:aspect-[16/10]",
-        "bg-gradient-to-br",
-        category.gradient,
-        "border border-white/[0.08] shadow-[0_12px_32px_hsl(224_60%_2%/0.2)]",
-        "transition-[border-color,background-color] duration-200 hover:border-primary/35",
+        compact
+          ? "border border-white/[0.055] bg-card/70 shadow-[0_10px_28px_hsl(222_70%_2%/0.18)] transition-[border-color,background-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-white/[0.1] hover:bg-card hover:shadow-[0_16px_34px_hsl(222_70%_2%/0.3)]"
+          : cn(
+              "border border-white/[0.08] bg-gradient-to-br shadow-[0_12px_32px_hsl(224_60%_2%/0.2)] transition-[border-color,background-color] duration-200 hover:border-primary/35",
+              category.gradient,
+            ),
         category.featured && "border-primary/25",
         "animate-fade-in",
       )}
       style={{ animationDelay: `${index * 100}ms` }}
     >
-      <div className="absolute inset-0 bg-background/20 transition-colors group-hover:bg-background/10" />
+      <div
+        className={cn(
+          "absolute inset-0 transition-colors",
+          compact ? "bg-transparent" : "bg-background/20 group-hover:bg-background/10",
+        )}
+      />
       <Icon
-        className="absolute -right-3 -top-3 h-24 w-24 text-white/[0.045] transition-colors group-hover:text-primary/[0.09]"
+        className={cn(
+          "absolute -right-3 -top-3 h-24 w-24 transition-colors",
+          compact
+            ? "text-white/[0.035] duration-200 group-hover:text-primary/[0.075]"
+            : "text-white/[0.045] group-hover:text-primary/[0.09]",
+        )}
         strokeWidth={1.25}
         aria-hidden="true"
       />
@@ -98,7 +110,10 @@ const CategoryCard = ({ category, index = 0, compact = false }: CategoryCardProp
       >
         <div
           className={cn(
-            "mb-auto grid place-items-center rounded-lg border border-white/[0.09] bg-background/35 transition-colors group-hover:border-primary/30 group-hover:bg-primary/[0.08]",
+            "mb-auto grid place-items-center rounded-lg transition-colors",
+            compact
+              ? "bg-white/[0.045] duration-200 group-hover:bg-primary/[0.09]"
+              : "border border-white/[0.09] bg-background/35 group-hover:border-primary/30 group-hover:bg-primary/[0.08]",
             compact ? "h-9 w-9" : "h-11 w-11",
           )}
         >
@@ -108,6 +123,7 @@ const CategoryCard = ({ category, index = 0, compact = false }: CategoryCardProp
         <h3
           className={cn(
             "mb-1 flex w-full items-center justify-between gap-3 font-bold transition-colors group-hover:text-primary",
+            compact && "tracking-[-0.015em] duration-200",
             compact ? "text-base" : "text-lg md:text-xl",
           )}
         >

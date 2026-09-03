@@ -83,7 +83,11 @@ describe("premium UI variants", () => {
   it("marks the rankings group active and closes the mobile menu with Escape", () => {
     renderApp(<Header />, "/top");
 
-    expect(findButton("Rankings")).toHaveClass("text-primary");
+    expect(findButton("Rankings")).toHaveClass(
+      "text-foreground",
+      "after:scale-x-100",
+      "after:bg-primary",
+    );
     const menuButton = host.querySelector<HTMLButtonElement>('[aria-label="Abrir menu"]');
     expect(menuButton).not.toBeNull();
 

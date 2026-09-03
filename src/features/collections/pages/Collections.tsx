@@ -49,7 +49,7 @@ const Collections = () => {
         <PageContainer className="text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Orbit className="w-5 h-5 text-primary" />
-            <span className="font-bold text-gradient-primary">SpotLight</span>
+            <span className="font-brand font-bold text-gradient-primary">SpotLight</span>
           </div>
           <p className="text-sm text-muted-foreground">{t("home.footerTagline")}</p>
         </PageContainer>

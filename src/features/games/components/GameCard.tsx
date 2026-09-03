@@ -6,6 +6,7 @@ import { getPosterImage } from "@/lib/steam";
 import { formatPlayers, getRatingColorClass, isFreePrice } from "@/lib/format";
 
 export type GameCardVariant = "default" | "compact" | "ranking" | "ranking-featured" | "poster";
+export type GameCardAppearance = "default" | "editorial";
 
 interface GameCardProps {
   game: GameData;
@@ -14,6 +15,7 @@ interface GameCardProps {
   variant?: GameCardVariant;
   rank?: number;
   contextLabel?: string;
+  appearance?: GameCardAppearance;
 }
 
 const GameCard = ({
@@ -23,15 +25,22 @@ const GameCard = ({
   variant = "default",
   rank,
   contextLabel,
+  appearance = "default",
 }: GameCardProps) => {
   const { t } = useTranslation();
+  const isEditorial = appearance === "editorial";
 
   if (variant === "ranking-featured") {
     return (
       <button
         type="button"
         onClick={onClick}
-        className="group relative min-h-64 h-full w-full overflow-hidden rounded-2xl border border-white/[0.09] bg-card text-left shadow-[0_18px_50px_hsl(224_60%_2%/0.38)] transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_24px_65px_hsl(224_60%_2%/0.56)]"
+        className={cn(
+          "group relative h-full min-h-64 w-full overflow-hidden text-left transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5",
+          isEditorial
+            ? "rounded-2xl bg-card shadow-[0_16px_44px_hsl(222_70%_2%/0.3)] ring-1 ring-white/[0.045] hover:shadow-[0_22px_54px_hsl(222_70%_2%/0.42)]"
+            : "rounded-2xl border border-white/[0.09] bg-card shadow-[0_18px_50px_hsl(224_60%_2%/0.38)] hover:border-primary/40 hover:shadow-[0_24px_65px_hsl(224_60%_2%/0.56)]",
+        )}
       >
         <img
           src={game.image}
@@ -41,7 +50,7 @@ const GameCard = ({
           decoding="async"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-black/5" />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/15 to-transparent opacity-60" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-50" />
 
         <div className="absolute left-4 top-4 flex items-center gap-2">
           <span className="grid h-9 min-w-9 place-items-center rounded-lg border border-white/15 bg-black/70 px-2 font-logo text-sm font-bold text-white backdrop-blur-md">
@@ -81,7 +90,12 @@ const GameCard = ({
       <button
         type="button"
         onClick={onClick}
-        className="game-card group flex min-h-[4.5rem] w-full items-center gap-2.5 p-2.5 text-left sm:min-h-[4.75rem] sm:gap-4 sm:p-3"
+        className={cn(
+          "group flex min-h-[4.5rem] w-full items-center gap-2.5 p-2.5 text-left transition-[background-color,transform] duration-200 sm:min-h-[4.75rem] sm:gap-4 sm:p-3",
+          isEditorial
+            ? "rounded-xl bg-white/[0.025] hover:-translate-y-px hover:bg-white/[0.05]"
+            : "game-card",
+        )}
         style={{ animationDelay: `${index * 50}ms` }}
       >
         <div className="w-6 flex-shrink-0 text-center sm:w-8">
@@ -102,7 +116,7 @@ const GameCard = ({
           <img
             src={game.image}
             alt={game.title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+            className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
             loading="lazy"
             decoding="async"
           />
@@ -140,6 +154,75 @@ const GameCard = ({
 
   if (variant === "poster") {
     const posterImage = getPosterImage(game.app_id);
+
+    if (isEditorial) {
+      return (
+        <button
+          type="button"
+          onClick={onClick}
+          className="group w-full overflow-hidden rounded-2xl bg-card/70 text-left shadow-[0_10px_28px_hsl(222_70%_2%/0.2)] ring-1 ring-white/[0.045] transition-[transform,box-shadow,background-color] duration-200 hover:-translate-y-0.5 hover:bg-card hover:shadow-[0_18px_38px_hsl(222_70%_2%/0.34)]"
+          style={{ animationDelay: `${index * 50}ms` }}
+        >
+          <div className="relative aspect-[2/3] overflow-hidden bg-muted">
+            <img
+              src={posterImage}
+              alt={game.title}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.025]"
+              loading="lazy"
+              decoding="async"
+              onError={(event) => {
+                const target = event.currentTarget;
+                if (target.src !== game.image) {
+                  target.src = game.image;
+                }
+              }}
+            />
+            <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-2.5">
+              {rank ? (
+                <span className="inline-flex min-h-7 min-w-7 items-center justify-center rounded-lg bg-black/70 px-2 text-[11px] font-bold text-white backdrop-blur-sm">
+                  #{rank}
+                </span>
+              ) : (
+                <span />
+              )}
+              {game.communityRating ? (
+                <span
+                  className={cn(
+                    "inline-flex min-h-7 items-center gap-1 rounded-lg bg-black/70 px-2 text-[11px] font-semibold backdrop-blur-sm",
+                    getRatingColorClass(game.communityRating),
+                  )}
+                >
+                  <Star className="h-3 w-3 fill-current" />
+                  {game.communityRating}%
+                </span>
+              ) : null}
+            </div>
+            <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/35 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+          </div>
+
+          <div className="p-3.5 sm:p-4">
+            {contextLabel ? (
+              <span className="mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold text-primary/85">
+                <Sparkles className="h-3 w-3 shrink-0" />
+                <span className="truncate">{contextLabel}</span>
+              </span>
+            ) : null}
+            <h3 className="truncate text-sm font-bold tracking-[-0.015em] text-foreground transition-colors duration-200 group-hover:text-primary sm:text-[15px]">
+              {game.title}
+            </h3>
+            <div className="mt-2 flex items-center gap-3 text-[11px] text-muted-foreground">
+              {game.activePlayers ? (
+                <span className="inline-flex min-w-0 items-center gap-1.5">
+                  <Users className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{formatPlayers(game.activePlayers)}</span>
+                </span>
+              ) : null}
+              {game.genre ? <span className="truncate">{game.genre}</span> : null}
+            </div>
+          </div>
+        </button>
+      );
+    }
 
     return (
       <button
@@ -211,7 +294,9 @@ const GameCard = ({
       type="button"
       onClick={onClick}
       className={cn(
-        "game-card group w-full text-left animate-fade-in",
+        isEditorial
+          ? "group w-full overflow-hidden rounded-2xl bg-card/65 text-left shadow-[0_10px_28px_hsl(222_70%_2%/0.2)] ring-1 ring-white/[0.045] transition-[transform,box-shadow,background-color] duration-200 hover:-translate-y-0.5 hover:bg-card hover:shadow-[0_18px_38px_hsl(222_70%_2%/0.34)]"
+          : "game-card group w-full text-left animate-fade-in",
         variant === "compact" && "aspect-[4/3]",
       )}
       style={{ animationDelay: `${index * 50}ms` }}
@@ -220,13 +305,23 @@ const GameCard = ({
         <img
           src={game.image}
           alt={game.title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className={cn(
+            "h-full w-full object-cover transition-transform",
+            isEditorial
+              ? "duration-300 group-hover:scale-[1.025]"
+              : "duration-500 group-hover:scale-105",
+          )}
           loading="lazy"
           decoding="async"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent opacity-60" />
 
-        <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div
+          className={cn(
+            "absolute inset-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100",
+            isEditorial ? "bg-primary/[0.025]" : "bg-primary/10",
+          )}
+        />
 
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
           {game.genre && (

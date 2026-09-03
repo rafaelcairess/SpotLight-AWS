@@ -106,8 +106,8 @@ export default function Explore() {
   const catalogLayout = layoutMode === "compact" ? "posters" : "cards";
 
   return (
-    <PageShell mainClassName="pb-0">
-      <PageContainer as="section" className="mb-10 md:mb-14">
+    <PageShell className="explore-shell" mainClassName="pb-0" ambient={false}>
+      <PageContainer as="section" className="mb-12 sm:mb-16">
         {featuredGame ? (
           <FeaturedBanner
             game={featuredGame}
@@ -122,11 +122,12 @@ export default function Explore() {
       </PageContainer>
 
       {user ? (
-        <PageContainer as="section" className="mb-11 md:mb-16">
+        <PageContainer as="section" className="mb-12 sm:mb-16">
           <SectionHeader
             title={t("home.recommendationsTitle")}
             subtitle={t("home.recommendationsSubtitle")}
             icon={Sparkles}
+            appearance="editorial"
           />
           {recommendationsLoading ? (
             <LoadingSkeleton variant="card" count={5} />
@@ -138,6 +139,7 @@ export default function Explore() {
             <GameGrid
               games={recommendedGames}
               layout={catalogLayout}
+              cardAppearance="editorial"
               onGameSelect={openGame}
               getContextLabel={(game) =>
                 game.matchedTags.length
@@ -151,41 +153,28 @@ export default function Explore() {
         </PageContainer>
       ) : null}
 
-      <PageContainer as="section" className="mb-11 md:mb-20">
-        <SectionHeader
-          title={t("home.exploreCollectionsTitle")}
-          subtitle={t("home.exploreCollectionsSubtitle")}
-          icon={Layers3}
-          actionLabel={t("home.viewAll")}
-          actionHref="/collections"
-        />
-        <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4 md:gap-4">
-          {categories.slice(0, 4).map((category, index) => (
-            <CategoryCard key={category.id} category={category} index={index} compact />
-          ))}
-        </div>
-      </PageContainer>
-
-      <PageContainer as="section" className="mb-11 md:mb-20">
+      <PageContainer as="section" className="mb-12 sm:mb-16">
         <SectionHeader
           title={t("home.popularTitle")}
           subtitle={t("home.popularSubtitle")}
           icon={Flame}
           actionLabel={t("home.viewRanking")}
           actionHref="/mais-jogados"
+          appearance="editorial"
         />
         {popularLoading ? (
           <LoadingSkeleton variant="ranking" count={10} />
         ) : (
-          <div className="premium-surface grid items-stretch gap-3 p-3 lg:grid-cols-[minmax(18rem,0.72fr)_minmax(0,1.7fr)] lg:p-4">
-            {popularGames[0] && (
+          <div className="grid items-stretch gap-3 rounded-[1.25rem] bg-card/45 p-3 shadow-[inset_0_1px_0_hsl(0_0%_100%/0.025)] lg:grid-cols-[minmax(18rem,0.72fr)_minmax(0,1.7fr)] lg:p-4">
+            {popularGames[0] ? (
               <GameCard
                 game={popularGames[0]}
                 variant="ranking-featured"
+                appearance="editorial"
                 rank={1}
                 onClick={() => openGame(popularGames[0])}
               />
-            )}
+            ) : null}
             <div className="grid auto-rows-fr content-stretch gap-2 md:grid-cols-2 xl:grid-cols-3">
               {popularGames.slice(1, 10).map((game, index) => (
                 <div
@@ -195,6 +184,7 @@ export default function Explore() {
                   <GameCard
                     game={game}
                     variant="ranking"
+                    appearance="editorial"
                     rank={index + 2}
                     index={index}
                     onClick={() => openGame(game)}
@@ -206,11 +196,12 @@ export default function Explore() {
         )}
       </PageContainer>
 
-      <PageContainer as="section" className="mb-11 md:mb-20">
+      <PageContainer as="section" className="mb-12 sm:mb-16">
         <SectionHeader
           title={t("home.newWorthPlayingTitle")}
           subtitle={t("home.newWorthPlayingSubtitle")}
           icon={Clock3}
+          appearance="editorial"
         />
         {allGamesLoading ? (
           <LoadingSkeleton variant="card" count={5} />
@@ -219,16 +210,22 @@ export default function Explore() {
             {t("home.newWorthPlayingEmpty")}
           </div>
         ) : (
-          <GameGrid games={newReleases} layout={catalogLayout} onGameSelect={openGame} />
+          <GameGrid
+            games={newReleases}
+            layout={catalogLayout}
+            cardAppearance="editorial"
+            onGameSelect={openGame}
+          />
         )}
       </PageContainer>
 
-      <PageContainer as="section" className="mb-11 md:mb-20">
+      <PageContainer as="section" className="mb-12 sm:mb-16">
         <SectionHeader
           title={t("home.acclaimedTitle")}
           subtitle={t("home.acclaimedSubtitle")}
           icon={Sparkles}
           actions={<LayoutToggle value={layoutMode} onChange={setLayoutMode} />}
+          appearance="editorial"
         />
         {allGamesLoading ? (
           <LoadingSkeleton variant="card" count={5} />
@@ -237,10 +234,11 @@ export default function Explore() {
             <GameGrid
               games={acclaimedGames.slice(0, discoverLimit)}
               layout={catalogLayout}
+              cardAppearance="editorial"
               onGameSelect={openGame}
             />
-            {acclaimedGames.length > discoverLimit && (
-              <div className="flex justify-center mt-8">
+            {acclaimedGames.length > discoverLimit ? (
+              <div className="mt-8 flex justify-center">
                 <Button
                   variant="outline"
                   onClick={() => setDiscoverLimit((current) => current + PAGE_SIZE)}
@@ -249,23 +247,48 @@ export default function Explore() {
                   {t("common.actions.loadMore")}
                 </Button>
               </div>
-            )}
+            ) : null}
           </>
         )}
       </PageContainer>
 
-      {showMature && matureGames.length > 0 && (
-        <PageContainer as="section" className="mb-11 md:mb-20">
-          <SectionHeader title={t("home.matureTitle")} subtitle={t("home.matureSubtitle")} />
-          <GameGrid games={matureGames} layout={catalogLayout} onGameSelect={openGame} />
-        </PageContainer>
-      )}
+      <PageContainer as="section" className="mb-12 sm:mb-16">
+        <SectionHeader
+          title={t("home.exploreCollectionsTitle")}
+          subtitle={t("home.exploreCollectionsSubtitle")}
+          icon={Layers3}
+          actionLabel={t("home.viewAll")}
+          actionHref="/collections"
+          appearance="editorial"
+        />
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+          {categories.slice(0, 4).map((category, index) => (
+            <CategoryCard key={category.id} category={category} index={index} compact />
+          ))}
+        </div>
+      </PageContainer>
 
-      <footer className="relative border-t border-white/[0.06] bg-card/20 py-10">
+      {showMature && matureGames.length > 0 ? (
+        <PageContainer as="section" className="mb-12 sm:mb-16">
+          <SectionHeader
+            title={t("home.matureTitle")}
+            subtitle={t("home.matureSubtitle")}
+            appearance="editorial"
+          />
+          <GameGrid
+            games={matureGames}
+            layout={catalogLayout}
+            cardAppearance="editorial"
+            onGameSelect={openGame}
+          />
+        </PageContainer>
+      ) : null}
+
+      <footer className="relative border-t border-white/[0.045] bg-card/20 py-12">
         <PageContainer className="text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Orbit className="w-5 h-5 text-primary" />
-            <span className="font-bold text-gradient-primary">SpotLight</span>
+            <span className="font-brand font-bold text-gradient-primary">SpotLight</span>
           </div>
           <p className="text-sm text-muted-foreground">{t("home.footerTagline")}</p>
         </PageContainer>

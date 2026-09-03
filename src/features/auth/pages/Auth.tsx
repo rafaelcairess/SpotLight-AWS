@@ -50,7 +50,7 @@ const Auth = () => {
             <Orbit className="w-10 h-10 text-primary" />
             <div className="absolute inset-0 blur-lg bg-primary/30" />
           </div>
-          <span className="text-3xl font-bold text-gradient-primary">SpotLight</span>
+          <span className="font-brand text-3xl font-bold text-gradient-primary">SpotLight</span>
         </div>
 
         <Card className="glass border-border/30">

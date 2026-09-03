@@ -159,14 +159,14 @@ const Header = () => {
 
   const navLinkClass = (active: boolean) =>
     cn(
-      "inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium transition-colors",
+      "relative inline-flex min-h-10 items-center rounded-lg px-3 text-[13px] font-semibold transition-colors duration-200 after:absolute after:inset-x-3 after:bottom-0 after:h-px after:origin-center after:transition-transform after:duration-200",
       active
-        ? "bg-primary/[0.09] text-primary"
-        : "text-muted-foreground hover:bg-white/[0.035] hover:text-foreground",
+        ? "text-foreground after:scale-x-100 after:bg-primary"
+        : "text-muted-foreground after:scale-x-0 after:bg-primary hover:bg-white/[0.025] hover:text-foreground",
     );
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.07] bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/88">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.055] bg-background/90 pt-[env(safe-area-inset-top)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/82">
       <div className="mx-auto max-w-[1440px] px-3.5 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center gap-3 xl:h-[4.5rem]">
           <Link to="/" className="group flex shrink-0 items-center gap-2.5" aria-label="SpotLight">
@@ -175,13 +175,13 @@ const Header = () => {
               style={{ backgroundImage: `url(${logoSpotlight})`, backgroundSize: "230%" }}
               aria-hidden="true"
             />
-            <span className="block font-logo text-base font-bold tracking-[-0.04em] sm:text-lg">
+            <span className="font-brand block text-base font-bold tracking-[-0.04em] sm:text-lg">
               Spot<span className="text-primary">Light</span>
             </span>
           </Link>
 
           <nav
-            className="ml-4 hidden items-center gap-1 xl:flex"
+            className="ml-5 hidden items-center gap-0.5 xl:flex"
             aria-label={t("header.mainNavigation")}
           >
             {primaryLinks.map((link) => (
@@ -238,7 +238,7 @@ const Header = () => {
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder={t("header.searchPlaceholder")}
                 aria-label={t("header.searchPlaceholder")}
-                className="border-white/[0.08] bg-card/70 pl-10"
+                className="h-10 rounded-xl border-white/[0.07] bg-white/[0.035] pl-10 shadow-none transition-colors hover:bg-white/[0.05] focus-visible:bg-card"
               />
             </div>
           </form>
@@ -331,7 +331,7 @@ const Header = () => {
                     <MessageSquare />
                   </Link>
                 </Button>
-                <Button variant="glow" size="sm" asChild>
+                <Button variant="outline" size="sm" className="bg-white/[0.025]" asChild>
                   <Link to="/auth">{t("header.signIn")}</Link>
                 </Button>
               </>
@@ -381,7 +381,11 @@ const Header = () => {
                   <Link
                     key={link.href}
                     to={link.href}
-                    className={cn(navLinkClass(location.pathname === link.href), "px-4")}
+                    className={cn(
+                      navLinkClass(location.pathname === link.href),
+                      "px-4 after:hidden",
+                      location.pathname === link.href && "bg-white/[0.04]",
+                    )}
                   >
                     {link.label}
                   </Link>
@@ -392,7 +396,11 @@ const Header = () => {
                 <Link
                   key={link.href}
                   to={link.href}
-                  className={cn(navLinkClass(location.pathname === link.href), "gap-3 px-4")}
+                  className={cn(
+                    navLinkClass(location.pathname === link.href),
+                    "gap-3 px-4 after:hidden",
+                    location.pathname === link.href && "bg-white/[0.04]",
+                  )}
                 >
                   <link.icon className="h-4 w-4" />
                   {link.label}
@@ -461,7 +469,7 @@ const Header = () => {
                   </button>
                 </>
               ) : !authLoading ? (
-                <Button variant="glow" className="mt-2" asChild>
+                <Button variant="outline" className="mt-2 bg-white/[0.025]" asChild>
                   <Link to="/auth">{t("header.signIn")}</Link>
                 </Button>
               ) : null}

@@ -7,58 +7,58 @@
 @layer base {
   :root {
     /* Tema escuro editorial */
-    --background: 228 63% 5%;
-    --foreground: 216 33% 97%;
+    --background: 222 44% 5%;
+    --foreground: 220 43% 97%;
 
-    --card: 220 50% 9%;
-    --card-foreground: 216 33% 97%;
-    --card-hover: 219 46% 12%;
+    --card: 222 37% 8%;
+    --card-foreground: 220 43% 97%;
+    --card-hover: 222 37% 11%;
 
-    --popover: 220 52% 8%;
-    --popover-foreground: 216 33% 97%;
+    --popover: 222 38% 8%;
+    --popover-foreground: 220 43% 97%;
 
     /* Azul da marca */
-    --primary: 217 100% 65%;
-    --primary-foreground: 228 63% 5%;
+    --primary: 216 100% 68%;
+    --primary-foreground: 222 44% 5%;
     --primary-glow: 216 100% 72%;
 
     /* Superficies neutras */
-    --secondary: 219 38% 14%;
-    --secondary-foreground: 216 28% 91%;
+    --secondary: 222 37% 11%;
+    --secondary-foreground: 220 25% 92%;
 
-    --muted: 220 34% 12%;
-    --muted-foreground: 215 20% 66%;
+    --muted: 222 29% 12%;
+    --muted-foreground: 221 11% 62%;
 
     /* Ciano reservado para destaques secundarios */
-    --accent: 173 65% 53%;
-    --accent-foreground: 228 63% 5%;
+    --accent: 170 66% 58%;
+    --accent-foreground: 222 44% 5%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 350 95% 71%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 216 37% 21%;
-    --input: 219 38% 15%;
-    --ring: 217 100% 65%;
+    --border: 220 22% 18%;
+    --input: 222 29% 13%;
+    --ring: 216 100% 68%;
 
-    --radius: 0.875rem;
+    --radius: 0.75rem;
 
     /* Tokens customizados de gaming */
-    --glow-primary: 0 12px 32px hsl(217 100% 58% / 0.16);
-    --glow-accent: 0 10px 28px hsl(173 65% 45% / 0.14);
-    --gradient-dark: linear-gradient(180deg, hsl(220 50% 10%) 0%, hsl(228 63% 5%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(220 46% 11%) 0%, hsl(224 50% 7%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(217 100% 65% / 0.1) 0%, transparent 48%);
-    --gradient-featured: linear-gradient(180deg, transparent 0%, hsl(228 63% 5% / 0.92) 100%);
+    --glow-primary: 0 12px 32px hsl(216 100% 60% / 0.12);
+    --glow-accent: 0 10px 28px hsl(170 66% 50% / 0.1);
+    --gradient-dark: linear-gradient(180deg, hsl(222 37% 8%) 0%, hsl(222 44% 5%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(222 37% 10%) 0%, hsl(222 40% 7%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(216 100% 68% / 0.08) 0%, transparent 48%);
+    --gradient-featured: linear-gradient(180deg, transparent 0%, hsl(222 44% 5% / 0.94) 100%);
 
     /* Barra lateral */
-    --sidebar-background: 224 54% 7%;
-    --sidebar-foreground: 216 28% 91%;
-    --sidebar-primary: 217 100% 65%;
-    --sidebar-primary-foreground: 228 63% 5%;
-    --sidebar-accent: 219 38% 14%;
-    --sidebar-accent-foreground: 216 28% 91%;
-    --sidebar-border: 216 37% 18%;
-    --sidebar-ring: 217 100% 65%;
+    --sidebar-background: 222 44% 6%;
+    --sidebar-foreground: 220 25% 92%;
+    --sidebar-primary: 216 100% 68%;
+    --sidebar-primary-foreground: 222 44% 5%;
+    --sidebar-accent: 222 37% 11%;
+    --sidebar-accent-foreground: 220 25% 92%;
+    --sidebar-border: 220 22% 16%;
+    --sidebar-ring: 216 100% 68%;
   }
 
   * {
@@ -73,12 +73,12 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: "Josefin Sans", system-ui, sans-serif;
+    font-family: "Manrope", system-ui, sans-serif;
     min-width: 320px;
     overflow-x: hidden;
     background-image: radial-gradient(
       circle at 14% -12%,
-      hsl(var(--primary) / 0.1),
+      hsl(var(--primary) / 0.055),
       transparent 34rem
     );
     background-attachment: fixed;
@@ -241,8 +241,20 @@
   }
 
   .font-logo {
+    font-family: "Manrope", system-ui, sans-serif;
+    letter-spacing: -0.01em;
+  }
+
+  .font-brand {
     font-family: "Josefin Sans", system-ui, sans-serif;
     letter-spacing: -0.01em;
+  }
+
+  .explore-shell {
+    background-image:
+      radial-gradient(circle at 14% -8%, hsl(var(--primary) / 0.075), transparent 32rem),
+      radial-gradient(circle at 88% 38%, hsl(var(--accent) / 0.025), transparent 28rem);
+    background-attachment: fixed;
   }
 
   .page-glow {

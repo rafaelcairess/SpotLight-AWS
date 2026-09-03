@@ -1,4 +1,7 @@
-import GameCard, { type GameCardVariant } from "@/features/games/components/GameCard";
+import GameCard, {
+  type GameCardAppearance,
+  type GameCardVariant,
+} from "@/features/games/components/GameCard";
 import { cn } from "@/lib/utils";
 import type { GameData } from "@/types/game";
 
@@ -20,6 +23,7 @@ interface GameGridProps<T extends GameData> {
   ranked?: boolean;
   className?: string;
   getContextLabel?: (game: T) => string | undefined;
+  cardAppearance?: GameCardAppearance;
 }
 
 /** Shared responsive catalog grid used by discovery, search, rankings and collections. */
@@ -32,6 +36,7 @@ export function GameGrid<T extends GameData>({
   ranked = false,
   className,
   getContextLabel,
+  cardAppearance,
 }: GameGridProps<T>) {
   const variant = cardVariant ?? (layout === "posters" ? "poster" : "default");
 
@@ -53,6 +58,7 @@ export function GameGrid<T extends GameData>({
           rank={ranked ? index + 1 : undefined}
           variant={variant}
           contextLabel={getContextLabel?.(game)}
+          appearance={cardAppearance}
           onClick={() => onGameSelect(game)}
         />
       ))}
