@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Gamepad2, Trophy, BarChart2, Bug, Sparkles, List, Zap } from "lucide-react";
 import {
   Dialog,
@@ -10,9 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
-import { STORAGE_KEYS } from "@/config/storageKeys";
-
-const CHANGELOG_KEY = STORAGE_KEYS.changelog;
+import { ONBOARDING_COMPLETED_EVENT, STORAGE_KEYS } from "@/config/storageKeys";
 
 interface ChangelogItem {
   icon: React.ElementType;
@@ -84,24 +82,33 @@ const TYPE_COLORS: Record<ChangelogItem["type"], string> = {
 export default function WhatsNewModal() {
   const { user, loading } = useAuth();
   const [open, setOpen] = useState(false);
+  const hasOpened = useRef(false);
 
   useEffect(() => {
     if (loading) return;
     if (typeof window === "undefined") return;
+
     const onboardingKey = `${STORAGE_KEYS.onboarding}.${user?.id ?? "guest"}`;
-    const onboardingDone = window.localStorage.getItem(onboardingKey) === "done";
-    const changelogSeen = window.localStorage.getItem(CHANGELOG_KEY) === "seen";
-    if (onboardingDone && !changelogSeen) {
-      // Pequeno delay para não competir com outros modais
-      const timer = setTimeout(() => setOpen(true), 600);
-      return () => clearTimeout(timer);
-    }
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    const scheduleOpen = () => {
+      if (hasOpened.current || timer) return;
+      timer = setTimeout(() => {
+        hasOpened.current = true;
+        setOpen(true);
+      }, 600);
+    };
+
+    if (window.localStorage.getItem(onboardingKey) === "done") scheduleOpen();
+    window.addEventListener(ONBOARDING_COMPLETED_EVENT, scheduleOpen);
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      window.removeEventListener(ONBOARDING_COMPLETED_EVENT, scheduleOpen);
+    };
   }, [loading, user?.id]);
 
-  const handleClose = () => {
-    window.localStorage.setItem(CHANGELOG_KEY, "seen");
-    setOpen(false);
-  };
+  const handleClose = () => setOpen(false);
 
   return (
     <Dialog

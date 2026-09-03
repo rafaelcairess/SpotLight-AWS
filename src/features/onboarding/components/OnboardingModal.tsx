@@ -21,7 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMaturePreference } from "@/hooks/useMaturePreference";
-import { STORAGE_KEYS } from "@/config/storageKeys";
+import { ONBOARDING_COMPLETED_EVENT, STORAGE_KEYS } from "@/config/storageKeys";
 
 const LANGUAGE_OPTIONS = [
   { value: "pt", short: "PT" },
@@ -86,6 +86,7 @@ export default function OnboardingModal() {
   const closeOnboarding = () => {
     if (typeof window !== "undefined") {
       window.localStorage.setItem(storageKey, "done");
+      window.dispatchEvent(new Event(ONBOARDING_COMPLETED_EVENT));
     }
     setOpen(false);
   };

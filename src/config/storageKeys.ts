@@ -1,7 +1,6 @@
 export const STORAGE_KEYS = {
   language: "spotlight.lang",
   onboarding: "spotlight.onboarding.v2",
-  changelog: "spotlight.changelog.v2",
   matureContent: "spotlight.matureContent",
   layoutMode: {
     base: "spotlight.layoutMode",
@@ -10,3 +9,5 @@ export const STORAGE_KEYS = {
     mostPlayed: "spotlight.layoutMode.mostPlayed",
   },
 } as const;
+
+export const ONBOARDING_COMPLETED_EVENT = "spotlight:onboarding-completed";
