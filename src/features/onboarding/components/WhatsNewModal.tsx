@@ -139,7 +139,9 @@ export default function WhatsNewModal() {
             Este projeto está sendo desenvolvido por uma única pessoa e é open source. Estou
             aprendendo e evoluindo o SpotLight aos poucos, conforme avanço nos meus estudos. O
             projeto começou no início da minha faculdade de Análise e Desenvolvimento de Sistemas e
-            continua crescendo junto com meu aprendizado. Obrigado por usar este site!
+            continua crescendo junto com meu aprendizado. Atualmente o site está em uma migração
+            para AWS, o que pode causar instabilidades temporárias. Obrigado por usar o SpotLight!
+            💜
           </p>
         </div>
 
