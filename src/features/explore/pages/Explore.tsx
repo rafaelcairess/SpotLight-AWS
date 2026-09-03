@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Clock3, Flame, Layers3, Orbit, Sparkles } from "lucide-react";
 import { PageContainer, PageShell } from "@/components/PageShell";
 import FeaturedBanner from "@/features/explore/components/FeaturedBanner";
-import PersonalHomePanel from "@/features/explore/components/PersonalHomePanel";
 import GameCard from "@/features/games/components/GameCard";
 import { GameGrid } from "@/features/games/components/GameGrid";
 import GameModal from "@/features/games/components/GameModal";
@@ -108,12 +107,6 @@ export default function Explore() {
 
   return (
     <PageShell mainClassName="pb-0">
-      {user ? (
-        <PageContainer className="mb-6 md:mb-8">
-          <PersonalHomePanel onGameSelect={openGame} />
-        </PageContainer>
-      ) : null}
-
       <PageContainer as="section" className="mb-10 md:mb-14">
         {featuredGame ? (
           <FeaturedBanner

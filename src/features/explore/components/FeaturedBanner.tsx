@@ -16,7 +16,6 @@ interface FeaturedBannerProps {
 
 const FeaturedBanner = ({ game, onExplore, isAuthenticated = false }: FeaturedBannerProps) => {
   const { t } = useTranslation();
-  const Heading = isAuthenticated ? "h2" : "h1";
   const handleOpenSteam = () => {
     window.open(getSteamStoreUrl(game.app_id), "_blank", "noopener,noreferrer");
   };
@@ -48,9 +47,9 @@ const FeaturedBanner = ({ game, onExplore, isAuthenticated = false }: FeaturedBa
           )}
         </div>
 
-        <Heading className="mb-4 line-clamp-2 break-words font-logo text-[2.25rem] font-extrabold leading-[1] tracking-[-0.045em] text-white [text-wrap:balance] animate-fade-in-up sm:text-5xl lg:text-6xl xl:text-[4rem]">
+        <h1 className="mb-4 line-clamp-2 break-words font-logo text-[2.25rem] font-extrabold leading-[1] tracking-[-0.045em] text-white [text-wrap:balance] animate-fade-in-up sm:text-5xl lg:text-6xl xl:text-[4rem]">
           {game.title}
-        </Heading>
+        </h1>
 
         <div className="mb-4 flex flex-wrap items-center gap-2 text-xs animate-fade-in sm:mb-5 sm:gap-5 sm:text-sm">
           {game.activePlayers && (

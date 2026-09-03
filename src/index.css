@@ -73,7 +73,7 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: "Ubuntu", system-ui, sans-serif;
+    font-family: "Josefin Sans", system-ui, sans-serif;
     min-width: 320px;
     overflow-x: hidden;
     background-image: radial-gradient(
@@ -241,7 +241,7 @@
   }
 
   .font-logo {
-    font-family: "Ubuntu", system-ui, sans-serif;
+    font-family: "Josefin Sans", system-ui, sans-serif;
     letter-spacing: -0.01em;
   }
 
