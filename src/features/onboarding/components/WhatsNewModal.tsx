@@ -127,6 +127,15 @@ export default function WhatsNewModal() {
           </DialogDescription>
         </DialogHeader>
 
+        <div className="mt-2 rounded-lg border border-primary/25 bg-primary/5 p-4">
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Este projeto está sendo desenvolvido por uma única pessoa e é open source. Estou
+            aprendendo e evoluindo o SpotLight aos poucos, conforme avanço nos meus estudos. O
+            projeto começou no início da minha faculdade de Análise e Desenvolvimento de Sistemas e
+            continua crescendo junto com meu aprendizado. Obrigado por usar este site!
+          </p>
+        </div>
+
         <div className="mt-2 space-y-3">
           {CHANGELOG_ITEMS.map((item) => {
             const Icon = item.icon;

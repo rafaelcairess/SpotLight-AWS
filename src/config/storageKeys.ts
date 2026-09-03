@@ -1,7 +1,7 @@
 export const STORAGE_KEYS = {
   language: "spotlight.lang",
   onboarding: "spotlight.onboarding.v2",
-  changelog: "spotlight.changelog.v1",
+  changelog: "spotlight.changelog.v2",
   matureContent: "spotlight.matureContent",
   layoutMode: {
     base: "spotlight.layoutMode",
