@@ -117,14 +117,14 @@ React + TypeScript
 
 O frontend é organizado por domínios de negócio. Hooks reutilizáveis concentram o acesso a dados, enquanto o TanStack Query coordena cache, mutations e invalidações. Operações que dependem de segredos são executadas em Edge Functions, nunca no navegador.
 
-| Camada | Tecnologias | Decisão principal |
-| --- | --- | --- |
-| Frontend | React 18, TypeScript, Vite e React Router | SPA tipada com build estático |
-| Interface | Tailwind CSS, shadcn/ui e Radix UI | Componentes consistentes e acessíveis |
-| Dados | TanStack Query, Supabase e PostgreSQL | Cache no cliente e segurança por RLS |
-| Backend atual | Edge Functions com Deno | Segredos e integrações fora do navegador |
-| Qualidade | Vitest, ESLint, Prettier e TypeScript | Validação automática em cada mudança |
-| Entrega | Amazon S3, CloudFront, ACM e GitHub Actions | Deploy estático com CDN e domínio HTTPS |
+| Camada        | Tecnologias                                 | Decisão principal                        |
+| ------------- | ------------------------------------------- | ---------------------------------------- |
+| Frontend      | React 18, TypeScript, Vite e React Router   | SPA tipada com build estático            |
+| Interface     | Tailwind CSS, shadcn/ui e Radix UI          | Componentes consistentes e acessíveis    |
+| Dados         | TanStack Query, Supabase e PostgreSQL       | Cache no cliente e segurança por RLS     |
+| Backend atual | Edge Functions com Deno                     | Segredos e integrações fora do navegador |
+| Qualidade     | Vitest, ESLint, Prettier e TypeScript       | Validação automática em cada mudança     |
+| Entrega       | Amazon S3, CloudFront, ACM e GitHub Actions | Deploy estático com CDN e domínio HTTPS  |
 
 Uma API em **ASP.NET Core 8** está sendo desenvolvida como base para uma migração gradual do backend. Ela possui health check, autenticação JWT/JWKS e testes automatizados, mas ainda não faz parte do ambiente de produção.
 
