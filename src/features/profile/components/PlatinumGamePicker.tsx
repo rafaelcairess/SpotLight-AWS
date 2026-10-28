@@ -78,7 +78,7 @@ export function PlatinumGamePicker({
               type="button"
               disabled={markPlatinum.isPending}
               onClick={() => selectGame(game.app_id, game.title)}
-              className="flex w-full items-center gap-3 rounded-lg border border-amber-300/20 p-2 text-left shadow-[0_0_12px_rgba(251,191,36,0.08)] transition hover:border-amber-300/40 hover:bg-secondary/60 disabled:opacity-50"
+              className="flex w-full items-center gap-3 rounded-lg border border-amber-300/25 p-2 text-left transition-colors hover:border-amber-300/50 hover:bg-secondary disabled:opacity-50"
             >
               <img
                 src={

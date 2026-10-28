@@ -57,7 +57,7 @@ export default function Feedback() {
         <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
           <form
             onSubmit={handleSubmit}
-            className="rounded-2xl border border-border/40 bg-card/50 p-6 space-y-4"
+            className="space-y-4 rounded-xl border border-border bg-card p-6"
           >
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
@@ -111,7 +111,7 @@ export default function Feedback() {
             </Button>
           </form>
 
-          <div className="rounded-2xl border border-border/40 bg-card/50 p-6">
+          <div className="rounded-xl border border-border bg-card p-6">
             <h3 className="text-lg font-semibold">{t("feedback.howTitle")}</h3>
             <p className="mt-2 text-sm text-muted-foreground">{t("feedback.howDescription")}</p>
 

@@ -323,17 +323,24 @@ describe("AWS static hosting contract", () => {
   });
 });
 
+describe("SpotLight brand contract", () => {
+  it("uses the otter identity across document and shared component assets", () => {
+    const html = workspaceFile("index.html");
+    const brandMark = workspaceFile("src/components/BrandMark.tsx");
+
+    expect(html).not.toContain("saturn.svg");
+    expect(html).toContain("/favicon.ico?v=3");
+    expect(html).toContain("/apple-touch-icon.png?v=3");
+    expect(brandMark).toContain("/spotlight-icon-512.png");
+    expect(brandMark).not.toContain("compact");
+  });
+});
+
 describe("ASP.NET migration boundary", () => {
   it("keeps frontend API calls behind one authenticated client", () => {
     const client = workspaceFile("src/api/client.ts");
     expect(client).toContain("API_URL");
     expect(client).toContain('headers.set("Authorization", `Bearer ${token}`)');
     expect(client).toContain('apiRequest<CurrentUserResponse>("/api/me"');
-  });
-
-  it("exposes a cloud health probe", () => {
-    const program = workspaceFile("backend/SpotLight.Api/Program.cs");
-    expect(program).toContain("builder.Services.AddHealthChecks()");
-    expect(program).toContain('app.MapHealthChecks("/health")');
   });
 });

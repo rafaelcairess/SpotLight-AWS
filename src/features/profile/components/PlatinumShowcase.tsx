@@ -150,7 +150,7 @@ export function PlatinumShowcase({
             return (
               <article
                 key={game.app_id}
-                className={`overflow-hidden rounded-md border border-amber-300/25 bg-black/20 shadow-[0_0_16px_rgba(251,191,36,0.12)] ${visibleGames.length === 1 ? "flex items-center" : ""}`}
+                className={`overflow-hidden rounded-md border border-amber-300/30 bg-black/20 ${visibleGames.length === 1 ? "flex items-center" : ""}`}
               >
                 <img
                   src={game.image}

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Clock3, Flame, Layers3, Orbit, Sparkles } from "lucide-react";
+import { Clock3, Flame, Layers3, Sparkles } from "lucide-react";
+import { BrandMark } from "@/components/BrandMark";
 import { PageContainer, PageShell } from "@/components/PageShell";
 import FeaturedBanner from "@/features/explore/components/FeaturedBanner";
 import GameCard from "@/features/games/components/GameCard";
@@ -106,7 +107,7 @@ export default function Explore() {
   const catalogLayout = layoutMode === "compact" ? "posters" : "cards";
 
   return (
-    <PageShell className="explore-shell" mainClassName="pb-0" ambient={false}>
+    <PageShell className="explore-shell" mainClassName="pb-0">
       <PageContainer as="section" className="mb-12 sm:mb-16">
         {featuredGame ? (
           <FeaturedBanner
@@ -165,7 +166,7 @@ export default function Explore() {
         {popularLoading ? (
           <LoadingSkeleton variant="ranking" count={10} />
         ) : (
-          <div className="grid items-stretch gap-3 rounded-[1.25rem] bg-card/45 p-3 shadow-[inset_0_1px_0_hsl(0_0%_100%/0.025)] lg:grid-cols-[minmax(18rem,0.72fr)_minmax(0,1.7fr)] lg:p-4">
+          <div className="grid items-stretch gap-3 border-y border-border py-4 lg:grid-cols-[minmax(18rem,0.72fr)_minmax(0,1.7fr)]">
             {popularGames[0] ? (
               <GameCard
                 game={popularGames[0]}
@@ -175,7 +176,7 @@ export default function Explore() {
                 onClick={() => openGame(popularGames[0])}
               />
             ) : null}
-            <div className="grid auto-rows-fr content-stretch gap-2 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid auto-rows-fr content-stretch md:grid-cols-2 md:gap-x-4 xl:grid-cols-3">
               {popularGames.slice(1, 10).map((game, index) => (
                 <div
                   key={game.app_id}
@@ -284,13 +285,15 @@ export default function Explore() {
         </PageContainer>
       ) : null}
 
-      <footer className="relative border-t border-white/[0.045] bg-card/20 py-12">
-        <PageContainer className="text-center">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Orbit className="w-5 h-5 text-primary" />
-            <span className="font-brand font-bold text-gradient-primary">SpotLight</span>
+      <footer className="border-t border-border bg-card py-10">
+        <PageContainer className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex items-center gap-3">
+            <BrandMark decorative className="h-11 w-11 rounded-full" />
+            <span className="font-brand text-lg font-bold">SpotLight</span>
           </div>
-          <p className="text-sm text-muted-foreground">{t("home.footerTagline")}</p>
+          <p className="max-w-md text-sm text-muted-foreground sm:text-right">
+            {t("home.footerTagline")}
+          </p>
         </PageContainer>
       </footer>
 

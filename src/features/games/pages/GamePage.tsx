@@ -49,8 +49,8 @@ export default function GamePage() {
           <div className="h-11 w-28 rounded-xl skeleton-shimmer" />
           <div className="min-h-[31rem] rounded-[1.75rem] skeleton-shimmer" />
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-            <div className="h-96 rounded-2xl skeleton-shimmer" />
-            <div className="h-80 rounded-2xl skeleton-shimmer" />
+            <div className="h-96 rounded-xl border border-border skeleton-shimmer" />
+            <div className="h-80 rounded-xl border border-border skeleton-shimmer" />
           </div>
         </PageContainer>
       </PageShell>

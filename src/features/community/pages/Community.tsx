@@ -94,7 +94,7 @@ const Community = () => {
               return (
                 <article
                   key={profile.id}
-                  className="surface-card interactive-surface flex items-center justify-between gap-4 p-4 backdrop-blur"
+                  className="surface-card interactive-surface flex items-center justify-between gap-4 p-4"
                 >
                   <Link
                     to={`/u/${profile.username}`}

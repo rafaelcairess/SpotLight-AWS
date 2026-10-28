@@ -300,8 +300,7 @@ export function GameLibrary({
                 key={userGame.id}
                 className={cn(
                   "group overflow-hidden rounded-lg border border-white/5 bg-black/20 transition-all hover:border-primary/40 hover:bg-black/30",
-                  userGame.is_platinumed &&
-                    "border-amber-300/25 shadow-[0_0_16px_rgba(251,191,36,0.12)]",
+                  userGame.is_platinumed && "border-amber-300/35",
                   highlightPlatinum && userGame.is_platinumed && "ring-1 ring-amber-300/25",
                 )}
                 onClick={onGameSelect ? handleSelect : undefined}
@@ -322,7 +321,7 @@ export function GameLibrary({
                   <img
                     src={coverImage}
                     alt={gameInfo.title}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="h-full w-full object-cover"
                     loading="lazy"
                     onError={(event) => {
                       event.currentTarget.src = getPosterImage(gameInfo.app_id);

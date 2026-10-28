@@ -2,63 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Sistema de Design do SpotLight - App de descoberta de jogos */
+/* SpotLight: sistema editorial escuro orientado ao conteúdo. */
 
 @layer base {
   :root {
-    /* Tema escuro editorial */
-    --background: 222 44% 5%;
-    --foreground: 220 43% 97%;
+    color-scheme: dark;
+    --background: 188 52% 6%;
+    --foreground: 45 24% 93%;
 
-    --card: 222 37% 8%;
-    --card-foreground: 220 43% 97%;
-    --card-hover: 222 37% 11%;
+    --card: 190 47% 10%;
+    --card-foreground: 45 24% 93%;
+    --card-hover: 190 43% 13%;
 
-    --popover: 222 38% 8%;
-    --popover-foreground: 220 43% 97%;
+    --popover: 190 47% 10%;
+    --popover-foreground: 45 24% 93%;
 
-    /* Azul da marca */
-    --primary: 216 100% 68%;
-    --primary-foreground: 222 44% 5%;
-    --primary-glow: 216 100% 72%;
+    --primary: 191 54% 39%;
+    --primary-foreground: 188 52% 6%;
+    --primary-glow: 190 50% 46%;
 
-    /* Superficies neutras */
-    --secondary: 222 37% 11%;
-    --secondary-foreground: 220 25% 92%;
+    --secondary: 190 43% 13%;
+    --secondary-foreground: 45 24% 93%;
 
-    --muted: 222 29% 12%;
-    --muted-foreground: 221 11% 62%;
+    --muted: 190 43% 13%;
+    --muted-foreground: 186 11% 63%;
 
-    /* Ciano reservado para destaques secundarios */
-    --accent: 170 66% 58%;
-    --accent-foreground: 222 44% 5%;
+    --accent: 48 87% 59%;
+    --accent-foreground: 188 52% 6%;
 
     --destructive: 350 95% 71%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 220 22% 18%;
-    --input: 222 29% 13%;
-    --ring: 216 100% 68%;
+    --border: 195 35% 21%;
+    --input: 190 43% 13%;
+    --ring: 189 51% 59%;
 
-    --radius: 0.75rem;
+    --radius: 0.625rem;
 
-    /* Tokens customizados de gaming */
-    --glow-primary: 0 12px 32px hsl(216 100% 60% / 0.12);
-    --glow-accent: 0 10px 28px hsl(170 66% 50% / 0.1);
-    --gradient-dark: linear-gradient(180deg, hsl(222 37% 8%) 0%, hsl(222 44% 5%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(222 37% 10%) 0%, hsl(222 40% 7%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(216 100% 68% / 0.08) 0%, transparent 48%);
-    --gradient-featured: linear-gradient(180deg, transparent 0%, hsl(222 44% 5% / 0.94) 100%);
+    --gradient-featured: linear-gradient(180deg, transparent 0%, hsl(188 52% 6% / 0.96) 100%);
 
     /* Barra lateral */
-    --sidebar-background: 222 44% 6%;
-    --sidebar-foreground: 220 25% 92%;
-    --sidebar-primary: 216 100% 68%;
-    --sidebar-primary-foreground: 222 44% 5%;
-    --sidebar-accent: 222 37% 11%;
-    --sidebar-accent-foreground: 220 25% 92%;
-    --sidebar-border: 220 22% 16%;
-    --sidebar-ring: 216 100% 68%;
+    --sidebar-background: 188 52% 6%;
+    --sidebar-foreground: 45 24% 93%;
+    --sidebar-primary: 191 54% 39%;
+    --sidebar-primary-foreground: 188 52% 6%;
+    --sidebar-accent: 190 43% 13%;
+    --sidebar-accent-foreground: 45 24% 93%;
+    --sidebar-border: 195 35% 21%;
+    --sidebar-ring: 189 51% 59%;
   }
 
   * {
@@ -76,12 +67,6 @@
     font-family: "Manrope", system-ui, sans-serif;
     min-width: 320px;
     overflow-x: hidden;
-    background-image: radial-gradient(
-      circle at 14% -12%,
-      hsl(var(--primary) / 0.055),
-      transparent 34rem
-    );
-    background-attachment: fixed;
   }
 
   ::selection {
@@ -96,70 +81,56 @@
 }
 
 @layer components {
-  /* Efeito de vidro para overlays */
   .glass {
-    @apply border border-white/[0.08] bg-card/75 backdrop-blur-2xl;
+    @apply border border-border bg-card;
   }
 
   .premium-surface {
-    @apply rounded-2xl border border-white/[0.08] bg-card/90;
-    box-shadow:
-      inset 0 1px 0 hsl(0 0% 100% / 0.035),
-      0 18px 48px hsl(228 70% 2% / 0.24);
+    @apply rounded-xl border border-border bg-card;
   }
 
   .premium-grid {
-    background-image:
-      linear-gradient(hsl(216 100% 70% / 0.025) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(216 100% 70% / 0.025) 1px, transparent 1px);
-    background-size: 72px 72px;
-    mask-image: linear-gradient(to bottom, black, transparent 72%);
+    background: none;
   }
 
   .eyebrow {
-    @apply text-[0.68rem] font-bold uppercase tracking-[0.2em] text-primary;
+    @apply text-[0.68rem] font-bold uppercase tracking-[0.14em] text-primary;
   }
 
   .surface-panel {
-    @apply rounded-3xl border border-white/[0.06] bg-card/35;
-    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.025);
+    @apply rounded-xl border border-border bg-card;
   }
 
   .surface-card {
-    @apply rounded-2xl border border-white/[0.08] bg-card/60;
-    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.025);
+    @apply rounded-lg border border-border bg-card;
   }
 
   .interactive-surface {
-    @apply transition-[border-color,background-color,transform,box-shadow] duration-200 hover:border-primary/40 hover:bg-card/80;
+    @apply transition-colors duration-150 hover:border-primary/70 hover:bg-card-hover;
   }
 
   .empty-state {
-    @apply rounded-2xl border border-dashed border-white/[0.10] bg-card/30 px-5 py-10 text-center text-sm text-muted-foreground;
+    @apply rounded-lg border border-dashed border-border bg-card px-5 py-10 text-center text-sm text-muted-foreground;
   }
 
   .metadata-text {
     @apply text-sm leading-relaxed text-muted-foreground;
   }
 
-  /* Efeitos de brilho */
   .glow-primary {
-    box-shadow: var(--glow-primary);
+    box-shadow: none;
   }
 
   .glow-accent {
-    box-shadow: var(--glow-accent);
+    box-shadow: none;
   }
 
-  /* Animacao de hover dos cards */
   .game-card {
-    @apply relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/70 transition-all duration-300;
-    box-shadow: 0 12px 35px hsl(224 60% 2% / 0.22);
+    @apply relative overflow-hidden rounded-lg border border-border bg-card transition-colors duration-150;
   }
 
   .game-card:hover {
-    @apply border-primary/35;
-    box-shadow: 0 18px 42px hsl(224 60% 2% / 0.46);
+    @apply border-primary/70 bg-card-hover;
   }
 
   /* Overlay com gradiente do destaque */
@@ -167,9 +138,8 @@
     background: var(--gradient-featured);
   }
 
-  /* Gradiente do hero */
   .hero-gradient {
-    background: var(--gradient-hero);
+    background: transparent;
   }
 
   /* Skeleton de carregamento */
@@ -231,13 +201,12 @@
 }
 
 @layer utilities {
-  /* Gradiente de texto */
   .text-gradient-primary {
     @apply text-primary;
   }
 
   .text-gradient-accent {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-accent to-amber-400;
+    @apply text-accent;
   }
 
   .font-logo {
@@ -246,48 +215,24 @@
   }
 
   .font-brand {
-    font-family: "Josefin Sans", system-ui, sans-serif;
+    font-family: "Manrope", system-ui, sans-serif;
     letter-spacing: -0.01em;
   }
 
   .explore-shell {
-    background-image:
-      radial-gradient(circle at 14% -8%, hsl(var(--primary) / 0.075), transparent 32rem),
-      radial-gradient(circle at 88% 38%, hsl(var(--accent) / 0.025), transparent 28rem);
-    background-attachment: fixed;
+    background: hsl(var(--background));
   }
 
   .page-glow {
-    background: radial-gradient(circle at 15% 5%, hsl(var(--primary) / 0.09), transparent 28rem);
+    background: transparent;
   }
 
-  /* Utilitarios de animacao */
   .animate-float {
-    animation: float 6s ease-in-out infinite;
-  }
-
-  @keyframes float {
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-10px);
-    }
+    animation: none;
   }
 
   .animate-pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite;
-  }
-
-  @keyframes pulse-glow {
-    0%,
-    100% {
-      box-shadow: 0 0 20px hsl(217 91% 60% / 0.3);
-    }
-    50% {
-      box-shadow: 0 0 40px hsl(217 91% 60% / 0.5);
-    }
+    animation: none;
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -7,7 +7,9 @@ interface LoadingSkeletonProps {
 
 const LoadingSkeleton = ({ variant = "card", count = 6 }: LoadingSkeletonProps) => {
   if (variant === "banner") {
-    return <div className="w-full aspect-[21/9] md:aspect-[21/8] rounded-2xl skeleton-shimmer" />;
+    return (
+      <div className="aspect-[21/9] w-full rounded-xl border border-border skeleton-shimmer md:aspect-[21/8]" />
+    );
   }
 
   if (variant === "ranking") {

@@ -31,6 +31,7 @@ export default function MostPlayed() {
           title={t("mostPlayed.title")}
           subtitle={t("mostPlayed.subtitle")}
           icon={Flame}
+          appearance="editorial"
           actions={<LayoutToggle value={layoutMode} onChange={setLayoutMode} />}
         />
 
@@ -62,7 +63,13 @@ export default function MostPlayed() {
             {t("common.status.noneFound")}
           </div>
         ) : layoutMode === "compact" ? (
-          <GameGrid games={games} layout="posters" ranked onGameSelect={openGame} />
+          <GameGrid
+            games={games}
+            layout="posters"
+            ranked
+            cardAppearance="editorial"
+            onGameSelect={openGame}
+          />
         ) : (
           <RankedGameList
             games={games}

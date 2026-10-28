@@ -17,6 +17,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { BrandMark } from "@/components/BrandMark";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
@@ -38,7 +39,6 @@ import {
 } from "@/hooks/useNotifications";
 import { getDateLocale } from "@/i18n/utils";
 import { cn } from "@/lib/utils";
-import logoSpotlight from "@/assets/logospotlight.png";
 
 const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -111,7 +111,7 @@ const Header = () => {
   const notificationMenu = (
     <DropdownMenuContent
       align="end"
-      className="w-[min(22rem,calc(100vw-2rem))] rounded-2xl border-white/[0.09] bg-popover/95 p-2 shadow-2xl backdrop-blur-2xl"
+      className="w-[min(22rem,calc(100vw-2rem))] rounded-lg border-border bg-popover p-2"
     >
       <div className="flex items-center justify-between gap-3 px-2 py-2">
         <span className="font-logo text-sm font-bold">{t("header.notifications")}</span>
@@ -140,7 +140,7 @@ const Header = () => {
             key={notification.id}
             onClick={() => handleNotificationClick(notification.id, notification.link)}
             className={cn(
-              "flex cursor-pointer flex-col items-start gap-1 rounded-xl px-3 py-3 whitespace-normal focus:bg-primary/10 focus:text-foreground",
+              "flex cursor-pointer flex-col items-start gap-1 rounded-md px-3 py-3 whitespace-normal focus:bg-primary/10 focus:text-foreground",
               !notification.read_at && "bg-primary/[0.06]",
             )}
           >
@@ -159,23 +159,22 @@ const Header = () => {
 
   const navLinkClass = (active: boolean) =>
     cn(
-      "relative inline-flex min-h-10 items-center rounded-lg px-3 text-[13px] font-semibold transition-colors duration-200 after:absolute after:inset-x-3 after:bottom-0 after:h-px after:origin-center after:transition-transform after:duration-200",
+      "relative inline-flex min-h-10 items-center px-3 text-[13px] font-semibold transition-colors duration-150 after:absolute after:inset-x-3 after:bottom-0 after:h-px after:origin-center after:transition-transform after:duration-150",
       active
         ? "text-foreground after:scale-x-100 after:bg-primary"
-        : "text-muted-foreground after:scale-x-0 after:bg-primary hover:bg-white/[0.025] hover:text-foreground",
+        : "text-muted-foreground after:scale-x-0 after:bg-primary hover:text-foreground",
     );
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.055] bg-background/90 pt-[env(safe-area-inset-top)] backdrop-blur-xl supports-[backdrop-filter]:bg-background/82">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background pt-[env(safe-area-inset-top)]">
       <div className="mx-auto max-w-[1440px] px-3.5 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center gap-3 xl:h-[4.5rem]">
-          <Link to="/" className="group flex shrink-0 items-center gap-2.5" aria-label="SpotLight">
-            <div
-              className="relative h-10 w-10 overflow-hidden rounded-xl border border-primary/20 bg-primary/[0.08] bg-center bg-no-repeat transition-colors group-hover:border-primary/40"
-              style={{ backgroundImage: `url(${logoSpotlight})`, backgroundSize: "230%" }}
-              aria-hidden="true"
+        <div className="flex h-20 items-center gap-3 xl:h-[5.5rem]">
+          <Link to="/" className="group flex shrink-0 items-center gap-3" aria-label="SpotLight">
+            <BrandMark
+              decorative
+              className="h-12 w-12 rounded-full border border-border transition-colors group-hover:border-primary/70 sm:h-14 sm:w-14"
             />
-            <span className="font-brand block text-base font-bold tracking-[-0.04em] sm:text-lg">
+            <span className="font-brand block text-lg font-extrabold tracking-[-0.04em] sm:text-xl">
               Spot<span className="text-primary">Light</span>
             </span>
           </Link>
@@ -200,12 +199,12 @@ const Header = () => {
                   <ChevronDown className="h-3.5 w-3.5" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-52 rounded-xl border-white/[0.09] bg-popover/95 p-2 backdrop-blur-xl">
+              <DropdownMenuContent className="w-52 rounded-lg border-border bg-popover p-2">
                 {rankingLinks.map((link) => (
                   <DropdownMenuItem
                     key={link.href}
                     asChild
-                    className="cursor-pointer rounded-lg p-0"
+                    className="cursor-pointer rounded-md p-0"
                   >
                     <Link to={link.href} className="flex w-full items-center gap-3 px-3 py-2.5">
                       <link.icon className="h-4 w-4 text-primary" />
@@ -238,7 +237,7 @@ const Header = () => {
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder={t("header.searchPlaceholder")}
                 aria-label={t("header.searchPlaceholder")}
-                className="h-10 rounded-xl border-white/[0.07] bg-white/[0.035] pl-10 shadow-none transition-colors hover:bg-white/[0.05] focus-visible:bg-card"
+                className="h-10 rounded-lg border-border bg-card pl-10 shadow-none transition-colors hover:border-primary/50 focus-visible:bg-card"
               />
             </div>
           </form>
@@ -277,7 +276,7 @@ const Header = () => {
                 </DropdownMenu>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="ml-1 rounded-xl p-0.5 ring-offset-background transition hover:ring-2 hover:ring-primary/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                    <button className="ml-1 rounded-lg p-0.5 ring-offset-background transition hover:ring-1 hover:ring-primary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                       <UserAvatar
                         src={profile?.avatar_url}
                         displayName={profile?.display_name}
@@ -288,7 +287,7 @@ const Header = () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="end"
-                    className="w-56 rounded-xl border-white/[0.09] bg-popover/95 p-2 backdrop-blur-xl"
+                    className="w-56 rounded-lg border-border bg-popover p-2"
                   >
                     <div className="px-3 py-2">
                       <p className="truncate text-sm font-semibold">
@@ -301,13 +300,13 @@ const Header = () => {
                       )}
                     </div>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild className="cursor-pointer rounded-lg">
+                    <DropdownMenuItem asChild className="cursor-pointer rounded-md">
                       <Link to="/profile" className="flex gap-2">
                         <UserRound />
                         {t("header.myProfile")}
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="cursor-pointer rounded-lg">
+                    <DropdownMenuItem asChild className="cursor-pointer rounded-md">
                       <Link to="/feedback" className="flex gap-2">
                         <MessageSquare />
                         {t("header.feedback")}
@@ -316,7 +315,7 @@ const Header = () => {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={handleSignOut}
-                      className="cursor-pointer gap-2 rounded-lg text-destructive focus:bg-destructive/10 focus:text-destructive"
+                      className="cursor-pointer gap-2 rounded-md text-destructive focus:bg-destructive/10 focus:text-destructive"
                     >
                       <LogOut />
                       {t("header.signOut")}
@@ -331,7 +330,7 @@ const Header = () => {
                     <MessageSquare />
                   </Link>
                 </Button>
-                <Button variant="outline" size="sm" className="bg-white/[0.025]" asChild>
+                <Button variant="outline" size="sm" asChild>
                   <Link to="/auth">{t("header.signIn")}</Link>
                 </Button>
               </>
@@ -360,7 +359,7 @@ const Header = () => {
         {isMobileMenuOpen && (
           <div
             id="mobile-navigation"
-            className="h-[calc(100dvh-4rem-env(safe-area-inset-top))] max-h-[calc(100dvh-4rem-env(safe-area-inset-top))] overscroll-contain overflow-y-auto border-t border-white/[0.07] bg-background/95 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 xl:hidden"
+            className="h-[calc(100dvh-5rem-env(safe-area-inset-top))] max-h-[calc(100dvh-5rem-env(safe-area-inset-top))] overscroll-contain overflow-y-auto border-t border-border bg-background pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 xl:hidden"
           >
             <form onSubmit={handleSearch} className="mb-4">
               <div className="relative">
@@ -384,7 +383,7 @@ const Header = () => {
                     className={cn(
                       navLinkClass(location.pathname === link.href),
                       "px-4 after:hidden",
-                      location.pathname === link.href && "bg-white/[0.04]",
+                      location.pathname === link.href && "bg-secondary",
                     )}
                   >
                     {link.label}
@@ -399,7 +398,7 @@ const Header = () => {
                   className={cn(
                     navLinkClass(location.pathname === link.href),
                     "gap-3 px-4 after:hidden",
-                    location.pathname === link.href && "bg-white/[0.04]",
+                    location.pathname === link.href && "bg-secondary",
                   )}
                 >
                   <link.icon className="h-4 w-4" />
@@ -408,7 +407,7 @@ const Header = () => {
               ))}
             </nav>
 
-            <div className="mt-4 grid gap-1 border-t border-white/[0.07] pt-4">
+            <div className="mt-4 grid gap-1 border-t border-border pt-4">
               <div className="flex min-h-11 items-center justify-between px-4">
                 <span className="text-sm text-muted-foreground">{t("common.language")}</span>
                 <LanguageSwitcher />

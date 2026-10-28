@@ -95,7 +95,7 @@ describe("premium UI variants", () => {
     expect(menuButton).toHaveAttribute("aria-expanded", "true");
     expect(document.body.style.overflow).toBe("hidden");
     expect(host.querySelector("#mobile-navigation")).toHaveClass(
-      "h-[calc(100dvh-4rem-env(safe-area-inset-top))]",
+      "h-[calc(100dvh-5rem-env(safe-area-inset-top))]",
     );
 
     act(() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" })));

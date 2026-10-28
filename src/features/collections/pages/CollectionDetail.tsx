@@ -60,17 +60,27 @@ export default function CollectionDetail() {
           {t("collectionDetail.back")}
         </Link>
 
-        <section
-          className={`relative mb-8 overflow-hidden rounded-2xl border border-border/30 bg-gradient-to-br ${category.gradient}`}
-        >
-          <div className="hero-gradient absolute inset-0 opacity-30" />
-          <div className="relative p-5 sm:p-8 md:p-12">
-            <h1 className="mb-2 text-3xl font-bold md:text-4xl">
+        <section className="mb-10 grid border-y border-border lg:grid-cols-[minmax(0,0.8fr)_minmax(26rem,1.2fr)]">
+          <div className="flex flex-col justify-center py-8 pr-0 sm:py-10 lg:pr-10">
+            <span className="mb-5 text-[10px] font-bold uppercase tracking-[0.12em] text-primary">
+              {t("collectionDetail.curatedCount", { count: manualIds.length })}
+            </span>
+            <h1 className="mb-3 text-4xl font-extrabold tracking-[-0.045em] md:text-5xl">
               {t(`categories.${category.id}.name`, { defaultValue: category.name })}
             </h1>
-            <p className="max-w-lg text-muted-foreground">
+            <p className="max-w-lg text-sm leading-7 text-muted-foreground">
               {t(`categories.${category.id}.description`, { defaultValue: category.description })}
             </p>
+          </div>
+          <div className="relative min-h-64 border-t border-border bg-muted lg:min-h-80 lg:border-l lg:border-t-0">
+            {games[0] ? (
+              <img
+                src={games[0].image}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover"
+                fetchPriority="high"
+              />
+            ) : null}
           </div>
         </section>
 
@@ -81,7 +91,13 @@ export default function CollectionDetail() {
             {t("collectionDetail.empty")}
           </div>
         ) : (
-          <GameGrid games={games} onGameSelect={openGame} />
+          <GameGrid
+            games={games}
+            layout="posters"
+            posterColumns={5}
+            cardAppearance="editorial"
+            onGameSelect={openGame}
+          />
         )}
       </PageContainer>
 

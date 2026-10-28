@@ -47,7 +47,7 @@ export function ProfileComments({
   };
 
   return (
-    <section className="rounded-2xl border border-border/50 bg-card/70 overflow-hidden">
+    <section className="overflow-hidden rounded-xl border border-border bg-card">
       <header className="flex items-center justify-between border-b border-border/40 px-5 py-4">
         <div className="flex items-center gap-2">
           <MessageSquare className="h-4 w-4 text-primary" />

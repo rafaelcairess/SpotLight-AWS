@@ -48,6 +48,7 @@ export default function TopGames() {
           title={t("topGames.title")}
           subtitle={t("topGames.subtitle")}
           icon={Trophy}
+          appearance="editorial"
           actions={<LayoutToggle value={layoutMode} onChange={setLayoutMode} />}
         />
 
@@ -72,7 +73,13 @@ export default function TopGames() {
             {t("common.status.noResults")}
           </div>
         ) : layoutMode === "compact" ? (
-          <GameGrid games={ranking} layout="posters" ranked onGameSelect={handleOpenGame} />
+          <GameGrid
+            games={ranking}
+            layout="posters"
+            ranked
+            cardAppearance="editorial"
+            onGameSelect={handleOpenGame}
+          />
         ) : (
           <RankedGameList
             games={ranking}

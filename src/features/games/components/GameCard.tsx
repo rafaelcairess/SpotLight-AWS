@@ -36,28 +36,27 @@ const GameCard = ({
         type="button"
         onClick={onClick}
         className={cn(
-          "group relative h-full min-h-64 w-full overflow-hidden text-left transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5",
+          "group relative h-full min-h-64 w-full overflow-hidden text-left transition-colors duration-150",
           isEditorial
-            ? "rounded-2xl bg-card shadow-[0_16px_44px_hsl(222_70%_2%/0.3)] ring-1 ring-white/[0.045] hover:shadow-[0_22px_54px_hsl(222_70%_2%/0.42)]"
-            : "rounded-2xl border border-white/[0.09] bg-card shadow-[0_18px_50px_hsl(224_60%_2%/0.38)] hover:border-primary/40 hover:shadow-[0_24px_65px_hsl(224_60%_2%/0.56)]",
+            ? "border border-border bg-card hover:border-primary/70"
+            : "rounded-xl border border-border bg-card hover:border-primary/70",
         )}
       >
         <img
           src={game.image}
           alt={game.title}
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+          className="absolute inset-0 h-full w-full object-cover"
           loading="lazy"
           decoding="async"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-black/5" />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-50" />
 
         <div className="absolute left-4 top-4 flex items-center gap-2">
-          <span className="grid h-9 min-w-9 place-items-center rounded-lg border border-white/15 bg-black/70 px-2 font-logo text-sm font-bold text-white backdrop-blur-md">
+          <span className="grid h-9 min-w-9 place-items-center rounded-md border border-white/15 bg-black/80 px-2 font-logo text-sm font-bold text-white">
             #1
           </span>
           {!!game.activePlayers && (
-            <span className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-black/65 px-2.5 py-2 text-xs text-white backdrop-blur-md">
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-black/80 px-2.5 py-2 text-xs text-white">
               <Users className="h-3.5 w-3.5" />
               {formatPlayers(game.activePlayers)}
             </span>
@@ -92,9 +91,7 @@ const GameCard = ({
         onClick={onClick}
         className={cn(
           "group flex min-h-[4.5rem] w-full items-center gap-2.5 p-2.5 text-left transition-[background-color,transform] duration-200 sm:min-h-[4.75rem] sm:gap-4 sm:p-3",
-          isEditorial
-            ? "rounded-xl bg-white/[0.025] hover:-translate-y-px hover:bg-white/[0.05]"
-            : "game-card",
+          isEditorial ? "border-b border-border bg-transparent hover:bg-card" : "game-card",
         )}
         style={{ animationDelay: `${index * 50}ms` }}
       >
@@ -116,7 +113,7 @@ const GameCard = ({
           <img
             src={game.image}
             alt={game.title}
-            className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
+            className="h-full w-full object-cover"
             loading="lazy"
             decoding="async"
           />
@@ -160,14 +157,14 @@ const GameCard = ({
         <button
           type="button"
           onClick={onClick}
-          className="group w-full overflow-hidden rounded-2xl bg-card/70 text-left shadow-[0_10px_28px_hsl(222_70%_2%/0.2)] ring-1 ring-white/[0.045] transition-[transform,box-shadow,background-color] duration-200 hover:-translate-y-0.5 hover:bg-card hover:shadow-[0_18px_38px_hsl(222_70%_2%/0.34)]"
+          className="group w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           style={{ animationDelay: `${index * 50}ms` }}
         >
-          <div className="relative aspect-[2/3] overflow-hidden bg-muted">
+          <div className="relative aspect-[2/3] overflow-hidden border border-border bg-muted transition-colors duration-150 group-hover:border-primary/70">
             <img
               src={posterImage}
-              alt={game.title}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.025]"
+              alt=""
+              className="h-full w-full object-cover"
               loading="lazy"
               decoding="async"
               onError={(event) => {
@@ -179,7 +176,7 @@ const GameCard = ({
             />
             <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-2.5">
               {rank ? (
-                <span className="inline-flex min-h-7 min-w-7 items-center justify-center rounded-lg bg-black/70 px-2 text-[11px] font-bold text-white backdrop-blur-sm">
+                <span className="inline-flex min-h-7 min-w-7 items-center justify-center rounded-sm bg-black/80 px-2 text-[11px] font-bold text-white">
                   #{rank}
                 </span>
               ) : (
@@ -188,7 +185,7 @@ const GameCard = ({
               {game.communityRating ? (
                 <span
                   className={cn(
-                    "inline-flex min-h-7 items-center gap-1 rounded-lg bg-black/70 px-2 text-[11px] font-semibold backdrop-blur-sm",
+                    "inline-flex min-h-7 items-center gap-1 rounded-sm bg-black/80 px-2 text-[11px] font-semibold",
                     getRatingColorClass(game.communityRating),
                   )}
                 >
@@ -200,7 +197,7 @@ const GameCard = ({
             <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/35 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
           </div>
 
-          <div className="p-3.5 sm:p-4">
+          <div className="pt-3.5">
             {contextLabel ? (
               <span className="mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold text-primary/85">
                 <Sparkles className="h-3 w-3 shrink-0" />
@@ -228,14 +225,14 @@ const GameCard = ({
       <button
         type="button"
         onClick={onClick}
-        className="group relative w-full overflow-hidden rounded-xl border border-white/[0.08] bg-card/60 text-left shadow-[0_10px_28px_hsl(224_60%_2%/0.28)] transition-all duration-300 hover:border-primary/40 sm:rounded-2xl sm:hover:-translate-y-1 sm:hover:shadow-[0_24px_60px_hsl(224_60%_2%/0.58)]"
+        className="group relative w-full overflow-hidden rounded-xl border border-border bg-card text-left transition-colors duration-150 hover:border-primary/70"
         style={{ animationDelay: `${index * 50}ms` }}
       >
         <div className="aspect-[2/3] relative">
           <img
             src={posterImage}
             alt={game.title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="h-full w-full object-cover"
             loading="lazy"
             decoding="async"
             onError={(event) => {
@@ -295,8 +292,8 @@ const GameCard = ({
       onClick={onClick}
       className={cn(
         isEditorial
-          ? "group w-full overflow-hidden rounded-2xl bg-card/65 text-left shadow-[0_10px_28px_hsl(222_70%_2%/0.2)] ring-1 ring-white/[0.045] transition-[transform,box-shadow,background-color] duration-200 hover:-translate-y-0.5 hover:bg-card hover:shadow-[0_18px_38px_hsl(222_70%_2%/0.34)]"
-          : "game-card group w-full text-left animate-fade-in",
+          ? "group w-full overflow-hidden rounded-xl border border-border bg-card text-left transition-colors duration-150 hover:border-primary/70 hover:bg-card-hover"
+          : "game-card group w-full text-left",
         variant === "compact" && "aspect-[4/3]",
       )}
       style={{ animationDelay: `${index * 50}ms` }}
@@ -305,12 +302,7 @@ const GameCard = ({
         <img
           src={game.image}
           alt={game.title}
-          className={cn(
-            "h-full w-full object-cover transition-transform",
-            isEditorial
-              ? "duration-300 group-hover:scale-[1.025]"
-              : "duration-500 group-hover:scale-105",
-          )}
+          className="h-full w-full object-cover"
           loading="lazy"
           decoding="async"
         />
@@ -325,18 +317,18 @@ const GameCard = ({
 
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
           {game.genre && (
-            <span className="px-2 py-1 text-[10px] font-medium uppercase tracking-wide bg-black/60 backdrop-blur-sm rounded-full text-foreground/80">
+            <span className="rounded-full bg-black/80 px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-foreground/80">
               {game.genre}
             </span>
           )}
           <div className="flex items-center gap-2">
             {game.discountPercent && (
-              <span className="px-2 py-1 text-xs font-semibold bg-emerald-500/90 backdrop-blur-sm rounded-full text-white">
+              <span className="rounded-full bg-emerald-500/90 px-2 py-1 text-xs font-semibold text-white">
                 -{game.discountPercent}%
               </span>
             )}
             {game.price && (
-              <span className="px-2 py-1 text-xs font-semibold bg-primary/90 backdrop-blur-sm rounded-full text-primary-foreground">
+              <span className="rounded-full bg-primary px-2 py-1 text-xs font-semibold text-primary-foreground">
                 {isFreePrice(game.price) ? t("gameCard.free") : game.price}
               </span>
             )}

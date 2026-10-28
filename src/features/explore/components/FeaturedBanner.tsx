@@ -1,4 +1,4 @@
-import { Info, Star, UserPlus, Users } from "lucide-react";
+import { ArrowUpRight, Info, Star, UserPlus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { GameData } from "@/types/game";
@@ -21,41 +21,43 @@ const FeaturedBanner = ({ game, onExplore, isAuthenticated = false }: FeaturedBa
   };
 
   return (
-    <div className="group relative min-h-[27rem] w-full overflow-hidden rounded-3xl bg-card shadow-[0_28px_80px_hsl(222_70%_2%/0.38)] ring-1 ring-white/[0.045] sm:min-h-[30rem] lg:min-h-[32rem]">
-      <img
-        src={game.image}
-        alt=""
-        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.018]"
-        fetchPriority="high"
-        loading="eager"
-        decoding="async"
-      />
+    <article className="grid w-full border-y border-border bg-background lg:grid-cols-[minmax(0,1.45fr)_minmax(22rem,0.75fr)]">
+      <figure className="relative min-h-72 overflow-hidden bg-muted sm:min-h-[25rem] lg:min-h-[34rem]">
+        <img
+          src={game.image}
+          alt={game.title}
+          className="absolute inset-0 h-full w-full object-cover"
+          fetchPriority="high"
+          loading="eager"
+          decoding="async"
+        />
+      </figure>
 
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,hsl(var(--background)/0.98)_0%,hsl(var(--background)/0.82)_38%,hsl(var(--background)/0.18)_76%,transparent_100%)]" />
-      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-black/15" />
-
-      <div className="relative flex min-h-[27rem] max-w-[46rem] flex-col justify-end p-6 sm:min-h-[30rem] sm:p-10 lg:min-h-[32rem] lg:p-12 xl:p-16">
-        <div className="mb-4 flex min-w-0 items-center gap-2 animate-fade-in sm:mb-6">
-          <span className="rounded-full bg-primary/15 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-primary backdrop-blur-md">
+      <div className="flex min-w-0 flex-col justify-center border-t border-border px-1 py-8 sm:px-6 sm:py-10 lg:border-l lg:border-t-0 lg:px-9 xl:px-12">
+        <div className="mb-6 flex min-w-0 items-center gap-3 text-xs">
+          <span className="font-bold uppercase tracking-[0.12em] text-primary">
             {t("featuredBanner.badge")}
           </span>
           {game.genre ? (
-            <span className="truncate rounded-full bg-black/35 px-3 py-1.5 text-xs font-medium text-foreground/75 backdrop-blur-md">
-              {game.genre}
-            </span>
+            <>
+              <span aria-hidden="true" className="text-border">
+                /
+              </span>
+              <span className="truncate font-medium text-muted-foreground">{game.genre}</span>
+            </>
           ) : null}
         </div>
 
-        <h1 className="mb-5 line-clamp-2 break-words text-[2.5rem] font-extrabold leading-[0.98] tracking-[-0.055em] text-white [text-wrap:balance] animate-fade-in-up sm:text-6xl lg:text-7xl">
+        <h1 className="mb-6 line-clamp-3 break-words text-4xl font-extrabold leading-[0.98] tracking-[-0.05em] text-foreground [text-wrap:balance] sm:text-5xl lg:text-[3.5rem]">
           {game.title}
         </h1>
 
-        <div className="mb-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs animate-fade-in sm:text-sm">
+        <div className="mb-5 flex flex-wrap items-center gap-x-5 gap-y-2 border-y border-border py-3 text-xs sm:text-sm">
           {game.activePlayers ? (
-            <div className="flex items-center gap-2 text-slate-300">
+            <div className="flex items-center gap-2 text-muted-foreground">
               <Users className="h-4 w-4 text-primary" />
               <span>
-                <span className="font-semibold text-white">
+                <span className="font-semibold text-foreground">
                   {formatPlayers(game.activePlayers)}
                 </span>{" "}
                 {t("gameCard.playing")}
@@ -77,54 +79,44 @@ const FeaturedBanner = ({ game, onExplore, isAuthenticated = false }: FeaturedBa
         </div>
 
         {game.short_description ? (
-          <p className="mb-7 max-w-2xl line-clamp-3 text-sm leading-7 text-slate-300/90 animate-fade-in sm:text-base">
+          <p className="mb-7 max-w-[62ch] line-clamp-4 text-sm leading-7 text-muted-foreground sm:text-base">
             {game.short_description}
           </p>
         ) : null}
 
-        <div className="flex w-full flex-col gap-2 animate-fade-in-up min-[420px]:w-auto min-[420px]:flex-row min-[420px]:flex-wrap min-[420px]:items-center sm:gap-3">
+        <div className="flex w-full flex-col items-start gap-1 sm:w-auto">
+          <Button
+            type="button"
+            size="lg"
+            className="mb-2 w-full justify-between gap-6 px-5 sm:w-auto"
+            onClick={onExplore}
+          >
+            <span className="inline-flex items-center gap-2">
+              <Info className="h-4 w-4" />
+              {t("featuredBanner.moreDetails")}
+            </span>
+            <ArrowUpRight className="h-4 w-4" />
+          </Button>
+
           {!isAuthenticated ? (
-            <Button size="lg" className="w-full gap-2 px-6 min-[420px]:w-auto" asChild>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-9 px-1 text-muted-foreground underline-offset-4 hover:bg-transparent hover:text-foreground hover:underline"
+              asChild
+            >
               <Link to="/auth?mode=signup">
                 <UserPlus className="h-4 w-4" />
                 {t("featuredBanner.createAccount")}
               </Link>
             </Button>
-          ) : (
-            <Button
-              type="button"
-              size="lg"
-              className="w-full gap-2 px-6 min-[420px]:w-auto"
-              onClick={onExplore}
-            >
-              <Info className="h-4 w-4" />
-              {t("featuredBanner.moreDetails")}
-            </Button>
-          )}
-
-          {!isAuthenticated ? (
-            <Button
-              type="button"
-              size="lg"
-              variant="outline"
-              className="w-full gap-2 border-white/[0.12] bg-black/20 px-6 backdrop-blur-sm min-[420px]:w-auto"
-              onClick={onExplore}
-            >
-              <Info className="h-4 w-4" />
-              {t("featuredBanner.moreDetails")}
-            </Button>
           ) : null}
 
           <Button
             type="button"
-            size={isAuthenticated ? "lg" : "sm"}
-            variant={isAuthenticated ? "outline" : "ghost"}
-            className={cn(
-              "w-full gap-2 min-[420px]:w-auto",
-              isAuthenticated
-                ? "border-white/[0.12] bg-black/20 px-6 backdrop-blur-sm"
-                : "min-h-10 px-3 text-slate-300 hover:bg-white/[0.05] hover:text-white",
-            )}
+            size="sm"
+            variant="ghost"
+            className="h-9 px-1 text-muted-foreground underline-offset-4 hover:bg-transparent hover:text-foreground hover:underline"
             onClick={handleOpenSteam}
           >
             <img src={steamIcon} alt="" className="h-4 w-4" />
@@ -132,7 +124,7 @@ const FeaturedBanner = ({ game, onExplore, isAuthenticated = false }: FeaturedBa
           </Button>
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 

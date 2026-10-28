@@ -92,7 +92,7 @@ export function GameLibraryActions({ appId, onWriteReview }: GameLibraryActionsP
           disabled={busy}
           className={
             userGame.is_platinumed
-              ? "w-full gap-2 border-amber-300/30 shadow-[0_0_12px_rgba(251,191,36,0.12)] sm:w-auto"
+              ? "w-full gap-2 border-amber-300/40 sm:w-auto"
               : "w-full gap-2 sm:w-auto"
           }
         >

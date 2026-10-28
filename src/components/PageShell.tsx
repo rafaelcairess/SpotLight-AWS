@@ -15,30 +15,23 @@ interface PageShellProps {
   children: ReactNode;
   className?: string;
   mainClassName?: string;
-  ambient?: boolean;
 }
 
 /** Shared page frame used by the main product journeys. */
-export function PageShell({ children, className, mainClassName, ambient = true }: PageShellProps) {
+export function PageShell({ children, className, mainClassName }: PageShellProps) {
   return (
     <div className={cn("relative min-h-screen overflow-x-clip bg-background", className)}>
       <a
         href="#main-content"
-        className="fixed left-4 top-4 z-[100] -translate-y-24 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-xl transition-transform focus:translate-y-0"
+        className="fixed left-4 top-4 z-[100] -translate-y-24 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-transform focus:translate-y-0"
       >
         Ir para o conteúdo
       </a>
       <Header />
-      {ambient && (
-        <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
-          <div className="absolute -left-48 -top-40 h-[34rem] w-[34rem] rounded-full bg-primary/[0.07] blur-[130px]" />
-          <div className="premium-grid absolute inset-0 opacity-20" />
-        </div>
-      )}
       <main
         id="main-content"
         className={cn(
-          "relative z-10 pt-[calc(4.75rem+env(safe-area-inset-top))] xl:pt-[5.75rem]",
+          "relative z-10 pt-[calc(5.75rem+env(safe-area-inset-top))] xl:pt-[6.75rem]",
           mainClassName,
         )}
       >

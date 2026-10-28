@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Orbit } from "lucide-react";
+import { BrandMark } from "@/components/BrandMark";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoginForm } from "@/features/auth/components/LoginForm";
 import { SignupForm } from "@/features/auth/components/SignupForm";
@@ -35,9 +35,7 @@ const Auth = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse">
-          <Orbit className="w-12 h-12 text-primary" />
-        </div>
+        <BrandMark decorative className="h-16 w-16 rounded-full" />
       </div>
     );
   }
@@ -45,15 +43,14 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="relative">
-            <Orbit className="w-10 h-10 text-primary" />
-            <div className="absolute inset-0 blur-lg bg-primary/30" />
-          </div>
-          <span className="font-brand text-3xl font-bold text-gradient-primary">SpotLight</span>
+        <div className="mb-8 flex flex-col items-center justify-center gap-3">
+          <BrandMark decorative className="h-24 w-24 rounded-full" />
+          <span className="font-brand text-3xl font-extrabold tracking-[-0.04em]">
+            Spot<span className="text-primary">Light</span>
+          </span>
         </div>
 
-        <Card className="glass border-border/30">
+        <Card>
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">
               {mode === "login" && t("auth.loginTitle")}

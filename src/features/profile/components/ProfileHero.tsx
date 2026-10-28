@@ -12,7 +12,7 @@ interface ProfileHeroProps {
   stats?: Array<{ label: string; value: number }>;
 }
 
-/** Shared premium hero for owner and public profiles. */
+/** Shared profile introduction for owner and public profiles. */
 export function ProfileHero({
   avatarUrl,
   displayName,
@@ -24,19 +24,15 @@ export function ProfileHero({
   stats = [],
 }: ProfileHeroProps) {
   return (
-    <div className="relative overflow-hidden border-b border-white/[0.07]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_15%,hsl(var(--primary)/0.24),transparent_32%),radial-gradient(circle_at_85%_5%,hsl(255_80%_62%/0.12),transparent_30%)]" />
-      <div className="premium-grid absolute inset-0 opacity-40" />
-      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-card/80 to-transparent" />
-
-      <div className="relative grid gap-5 p-4 sm:p-7 md:grid-cols-[10rem_minmax(0,1fr)] md:gap-6 lg:p-9">
+    <div className="overflow-hidden border-b border-border bg-card">
+      <div className="grid gap-5 p-4 sm:p-7 md:grid-cols-[10rem_minmax(0,1fr)] md:gap-6 lg:p-9">
         <UserAvatar
           src={avatarUrl}
           displayName={displayName}
           username={username}
           size="xl"
           shape="square"
-          className="h-28 w-28 justify-self-center rounded-2xl border-2 border-white/10 shadow-[0_22px_65px_hsl(226_70%_2%/0.55)] ring-4 ring-primary/15 sm:h-36 sm:w-36 md:h-40 md:w-40 md:justify-self-start"
+          className="h-28 w-28 justify-self-center rounded-xl border border-border sm:h-36 sm:w-36 md:h-40 md:w-40 md:justify-self-start"
         />
 
         <div className="flex min-w-0 flex-col justify-end gap-5">
@@ -57,12 +53,9 @@ export function ProfileHero({
           </div>
 
           {!!stats.length && (
-            <dl className="grid w-full max-w-2xl grid-cols-3 gap-2">
+            <dl className="grid w-full max-w-2xl grid-cols-3 divide-x divide-border border-y border-border">
               {stats.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="min-w-0 rounded-xl border border-white/[0.08] bg-black/20 px-2 py-2 text-center backdrop-blur-md sm:px-3 sm:text-left"
-                >
+                <div key={stat.label} className="min-w-0 px-3 py-3 text-center sm:text-left">
                   <dt className="truncate text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     {stat.label}
                   </dt>

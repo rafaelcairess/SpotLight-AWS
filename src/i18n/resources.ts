@@ -111,7 +111,7 @@ export const resources = {
         title: "Coleções",
         heading: "Coleções",
         subtitle:
-          "Sem ideia do que jogar? Escolha uma categoria e vai direto ao ponto.",
+          "Seleções manuais, organizadas por contexto e pelo que jogadores realmente recomendam.",
         featuredTitle: "Co-op em Destaque",
         featuredSubtitle: "Jogos cooperativos escolhidos para jogar agora",
         exploreMore: "Explore mais estilos e gêneros",
@@ -121,6 +121,7 @@ export const resources = {
       collectionDetail: {
         back: "Voltar às Coleções",
         empty: "Nenhum jogo encontrado nesta categoria.",
+        curatedCount: "Curadoria SpotLight · {{count}} jogos",
       },
       search: {
         backHome: "Voltar ao Início",
@@ -775,7 +776,7 @@ export const resources = {
         title: "Collections",
         heading: "Collections",
         subtitle:
-          "No idea what to play? Pick a category and go straight to the point.",
+          "Hand-picked selections organized by context and what players actually recommend.",
         featuredTitle: "Featured Co-op",
         featuredSubtitle: "Co-op picks ready to play right now",
         exploreMore: "Explore more styles and genres",
@@ -785,6 +786,7 @@ export const resources = {
       collectionDetail: {
         back: "Back to Collections",
         empty: "No games found in this category.",
+        curatedCount: "SpotLight curation · {{count}} games",
       },
       search: {
         backHome: "Back to Home",
@@ -1437,7 +1439,7 @@ export const resources = {
         title: "Colecciones",
         heading: "Colecciones",
         subtitle:
-          "¿Sin idea de qué jugar? Elige una categoría y ve directo al punto.",
+          "Selecciones manuales organizadas por contexto y por lo que recomiendan los jugadores.",
         featuredTitle: "Co-op destacado",
         featuredSubtitle: "Selección cooperativa lista para jugar",
         exploreMore: "Explora más estilos y géneros",
@@ -1447,6 +1449,7 @@ export const resources = {
       collectionDetail: {
         back: "Volver a Colecciones",
         empty: "No se encontraron juegos en esta categoría.",
+        curatedCount: "Curaduría SpotLight · {{count}} juegos",
       },
       search: {
         backHome: "Volver al inicio",

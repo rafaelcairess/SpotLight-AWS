@@ -8,21 +8,42 @@ import {
 } from "@/components/ui/dialog";
 import type { PlatinumPlatform } from "@/hooks/useUserGames";
 import steamLogo from "@/assets/steam.png";
-import xboxLogo from "@/assets/xbox.png";
-import playstationLogo from "@/assets/playstation.png";
 
-const platinumPlatforms: Array<{ value: PlatinumPlatform; label: string; logo: string }> = [
-  { value: "steam", label: "Steam", logo: steamLogo },
-  { value: "xbox", label: "Xbox", logo: xboxLogo },
-  { value: "playstation", label: "PlayStation", logo: playstationLogo },
+const XBOX_HARDWARE_IMAGE =
+  "https://assets.xboxservices.com/assets/18/30/1830806b-d41d-40ce-a846-792df7d14e1d.jpg?n=Xbox-Series-X_Sharing_200x200_02.jpg";
+const PLAYSTATION_HARDWARE_IMAGE =
+  "https://blog.playstation.com/tachyon/2023/10/cd56722db7b991b3d7a33f1bafd55f80d0ac553d.png";
+
+const platinumPlatforms: Array<{
+  value: PlatinumPlatform;
+  label: string;
+  image?: string;
+}> = [
+  { value: "steam", label: "Steam" },
+  { value: "xbox", label: "Xbox", image: XBOX_HARDWARE_IMAGE },
+  { value: "playstation", label: "PlayStation", image: PLAYSTATION_HARDWARE_IMAGE },
 ];
 
 export function PlatformLogo({ platform, size = "sm" }: { platform: string; size?: "sm" | "md" }) {
   const item = platinumPlatforms.find((option) => option.value === platform);
   if (!item) return null;
+  if (item.value !== "steam") {
+    return (
+      <span
+        title={item.label}
+        className={
+          size === "md"
+            ? "inline-flex h-7 items-center text-[10px] font-extrabold tracking-[0.08em] text-foreground"
+            : "inline-flex h-5 items-center text-[9px] font-extrabold tracking-[0.08em] text-muted-foreground"
+        }
+      >
+        {item.value === "playstation" ? "PS" : "XBOX"}
+      </span>
+    );
+  }
   return (
     <img
-      src={item.logo}
+      src={steamLogo}
       alt={item.label}
       title={item.label}
       className={size === "md" ? "h-7 w-7 object-contain" : "h-5 w-5 object-contain"}
@@ -44,10 +65,24 @@ export function PlatformChoices({
           key={item.value}
           type="button"
           onClick={() => onChange(item.value)}
-          className={`flex min-w-0 flex-col items-center gap-2 rounded-lg border p-3 text-xs transition ${value === item.value ? "border-amber-300/60 bg-amber-300/10 text-foreground" : "border-border/50 text-muted-foreground hover:bg-secondary/50"}`}
+          className={`group min-w-0 overflow-hidden rounded-md border text-left text-xs transition-colors ${value === item.value ? "border-amber-300/60 bg-amber-300/10 text-foreground" : "border-border text-muted-foreground hover:border-primary/60"}`}
         >
-          <PlatformLogo platform={item.value} size="md" />
-          <span className="truncate">{item.label}</span>
+          <span className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-secondary">
+            {item.image ? (
+              <img
+                src={item.image}
+                alt=""
+                className="h-full w-full object-cover transition-opacity group-hover:opacity-90"
+                loading="lazy"
+                decoding="async"
+              />
+            ) : (
+              <img src={steamLogo} alt="" className="h-10 w-10 object-contain" />
+            )}
+          </span>
+          <span className="block truncate border-t border-border px-2.5 py-2 font-semibold">
+            {item.label}
+          </span>
         </button>
       ))}
     </div>

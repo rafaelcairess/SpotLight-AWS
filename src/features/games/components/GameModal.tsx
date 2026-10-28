@@ -55,7 +55,7 @@ const GameModal = ({ game, isOpen, onClose }: GameModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-h-[calc(100dvh-0.75rem)] w-[calc(100%-0.75rem)] max-w-3xl grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-2xl border-border/50 bg-card p-0 sm:max-h-[90vh] sm:w-full">
+      <DialogContent className="max-h-[calc(100dvh-0.75rem)] w-[calc(100%-0.75rem)] max-w-3xl grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-xl border-border bg-card p-0 sm:max-h-[90vh] sm:w-full">
         <GameModalHeader game={displayGame} />
 
         <div className="min-h-0 space-y-5 overflow-y-auto overscroll-contain p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:space-y-6 sm:p-6">
