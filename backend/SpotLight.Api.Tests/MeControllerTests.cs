@@ -1,9 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
+using SpotLight.Api.Authentication;
 using SpotLight.Api.Contracts;
 using SpotLight.Api.Controllers;
 
@@ -22,33 +22,40 @@ public sealed class MeControllerTests : IClassFixture<WebApplicationFactory<Prog
     public void Get_WithTrustedClaims_ReturnsCurrentUser()
     {
         var expectedUserId = Guid.Parse("d853dbb3-bcfe-4493-a893-ba084a722ea5");
-        var claims = new[]
+        var currentUser = new FakeCurrentUser
         {
-            new Claim("sub", expectedUserId.ToString()),
-            new Claim("email", "usuario@spotlight.local"),
-            new Claim("role", "authenticated"),
-            new Claim("aal", "aal1"),
-            new Claim("is_anonymous", "false"),
+            IsAuthenticated = true,
+            UserId = expectedUserId,
+            Email = "usuario@spotlight.local",
+            Role = "authenticated",
+            AuthenticationLevel = "aal1",
         };
+        var controller = new MeController(currentUser);
 
-        var controller = new MeController
-        {
-            ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext
-                {
-                    User = new ClaimsPrincipal(new ClaimsIdentity(claims, "Test")),
-                },
-            },
-        };
         var result = controller.Get();
         var ok = Assert.IsType<OkObjectResult>(result.Result);
         var response = Assert.IsType<CurrentUserResponse>(ok.Value);
+
         Assert.Equal(expectedUserId, response.UserId);
         Assert.Equal("usuario@spotlight.local", response.Email);
         Assert.Equal("authenticated", response.Role);
         Assert.Equal("aal1", response.AuthenticationLevel);
         Assert.False(response.IsAnonymous);
+    }
+
+    [Fact]
+    public void Get_WithoutValidUserId_ReturnsUnauthorizedProblem()
+    {
+        var controller = new MeController(new FakeCurrentUser
+        {
+            IsAuthenticated = true,
+            UserId = null,
+        });
+
+        var result = controller.Get();
+        var problem = Assert.IsType<ObjectResult>(result.Result);
+
+        Assert.Equal(StatusCodes.Status401Unauthorized, problem.StatusCode);
     }
 
     [Fact]
@@ -64,5 +71,20 @@ public sealed class MeControllerTests : IClassFixture<WebApplicationFactory<Prog
         Assert.NotNull(problem);
         Assert.Equal(StatusCodes.Status401Unauthorized, problem.Status);
         Assert.Equal("Autenticação necessária", problem.Title);
+    }
+
+    private sealed class FakeCurrentUser : ICurrentUser
+    {
+        public bool IsAuthenticated { get; init; }
+
+        public Guid? UserId { get; init; }
+
+        public string? Email { get; init; }
+
+        public string Role { get; init; } = "authenticated";
+
+        public string? AuthenticationLevel { get; init; }
+
+        public bool IsAnonymous { get; init; }
     }
 }

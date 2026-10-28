@@ -20,9 +20,10 @@ React/Vite
 Supabase atual
 ```
 
-A aplicação está disponível em `https://spotlight.rafaelcpires.abrdns.com`. O backend
-ASP.NET Core e seu Dockerfile permanecem no código para etapas futuras, mas Docker não
-é necessário para servir os arquivos estáticos produzidos pelo Vite.
+A aplicação está disponível em `https://spotlight.rafaelcpires.abrdns.com`. A API
+ASP.NET Core permanece no código como base da migração gradual, mas ainda não faz parte
+do ambiente publicado. Seu modelo de execução será definido somente quando o backend
+começar a receber tráfego; o frontend estático não depende de contêineres.
 
 ## Build estático
 
@@ -145,7 +146,7 @@ Checklist funcional para a publicação futura:
 4. Avaliação da migração de Supabase Auth para Cognito.
 5. Avaliação de PostgreSQL para RDS ou Aurora PostgreSQL.
 6. Migração de arquivos do Supabase Storage para S3.
-7. Docker, ECR e ECS/Fargate somente para workloads de backend que justifiquem containers.
+7. Avaliação de contêineres somente se algum workload futuro não se adequar ao modelo serverless.
 8. Terraform depois que a arquitetura manual estiver compreendida e validada.
 
 Evite nesta fase NAT Gateway, ALB, EC2 permanente, RDS e serviços executados 24 horas.

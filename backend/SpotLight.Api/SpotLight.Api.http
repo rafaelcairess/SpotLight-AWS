@@ -1,6 +1,16 @@
 @SpotLight.Api_HostAddress = http://localhost:5080
 
-GET {{SpotLight.Api_HostAddress}}/api/health
+GET {{SpotLight.Api_HostAddress}}/health/live
+Accept: application/json
+
+###
+
+GET {{SpotLight.Api_HostAddress}}/health/ready
+Accept: application/json
+
+###
+
+GET {{SpotLight.Api_HostAddress}}/api/games/730
 Accept: application/json
 
 ###

@@ -6,7 +6,6 @@ namespace SpotLight.Api.Authentication;
 
 public static class SupabaseAuthenticationExtensions
 {
-    public const string AuthenticatedUserPolicy = "SupabaseAuthenticatedUser";
     public static IServiceCollection AddSupabaseAuthentication(
         this IServiceCollection services,
         IConfiguration configuration)
@@ -56,7 +55,7 @@ public static class SupabaseAuthenticationExtensions
 
         services.AddAuthorization(options =>
         {
-            options.AddPolicy(AuthenticatedUserPolicy, policy =>
+            options.AddPolicy(AuthorizationPolicies.AuthenticatedUser, policy =>
             {
                 policy.RequireAuthenticatedUser();
                 policy.RequireClaim("sub");
