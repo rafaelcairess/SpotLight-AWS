@@ -1,0 +1,367 @@
+using System.Globalization;
+using System.Net.Http.Headers;
+using System.Text.Json;
+using Amazon.AuroraDsql.Npgsql;
+using Npgsql;
+using NpgsqlTypes;
+
+if (args.Length == 0 || args[0] is "-h" or "--help")
+{
+    PrintUsage();
+    return 0;
+}
+
+Dictionary<string, string> options;
+try
+{
+    options = ParseOptions(args[1..]);
+}
+catch (ArgumentException exception)
+{
+    Console.Error.WriteLine(exception.Message);
+    return 2;
+}
+
+var endpoint = GetOption(options, "endpoint")
+    ?? Environment.GetEnvironmentVariable("DSQL_ENDPOINT");
+
+if (string.IsNullOrWhiteSpace(endpoint))
+{
+    Console.Error.WriteLine("Informe --endpoint ou a variável DSQL_ENDPOINT.");
+    return 2;
+}
+
+await using var dataSource = await DsqlDataSource.CreateAsync(new DsqlConfig
+{
+    Host = endpoint,
+    User = "admin",
+    OccMaxRetries = 3,
+});
+
+switch (args[0].ToLowerInvariant())
+{
+    case "apply-schema":
+        return await ApplySchemaAsync(dataSource, options, endpoint);
+    case "verify-schema":
+        return await VerifySchemaAsync(dataSource);
+    case "copy-catalog":
+        return await CopyCatalogAsync(dataSource, options);
+    default:
+        Console.Error.WriteLine($"Comando desconhecido: {args[0]}");
+        PrintUsage();
+        return 2;
+}
+
+static async Task<int> ApplySchemaAsync(
+    DsqlDataSource dataSource,
+    Dictionary<string, string> options,
+    string endpoint)
+{
+    var schemaPath = GetOption(options, "schema")
+        ?? Path.Combine("backend", "schema", "dsql", "001_catalog.sql");
+
+    if (!File.Exists(schemaPath))
+    {
+        Console.Error.WriteLine($"Schema não encontrado: {Path.GetFullPath(schemaPath)}");
+        return 2;
+    }
+
+    var statements = (await File.ReadAllTextAsync(schemaPath))
+        .Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+    foreach (var statement in statements)
+    {
+        await dataSource.ExecWithRetryAsync(statement);
+    }
+
+    Console.WriteLine($"Schema aplicado com sucesso em {endpoint} ({statements.Length} comandos).");
+    return 0;
+}
+
+static async Task<int> VerifySchemaAsync(DsqlDataSource dataSource)
+{
+    var expectedTables = CatalogDefinition.Tables.Select(table => table.Name).ToHashSet();
+    var actualTables = new HashSet<string>(StringComparer.Ordinal);
+
+    await using var connection = await dataSource.OpenConnectionAsync();
+    await using var command = connection.CreateCommand();
+    command.CommandText = """
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+        ORDER BY table_name
+        """;
+    await using var reader = await command.ExecuteReaderAsync();
+
+    while (await reader.ReadAsync())
+    {
+        actualTables.Add(reader.GetString(0));
+    }
+    await reader.DisposeAsync();
+
+    var missingTables = expectedTables.Except(actualTables).Order().ToArray();
+    if (missingTables.Length > 0)
+    {
+        Console.Error.WriteLine($"Tabelas ausentes: {string.Join(", ", missingTables)}");
+        return 1;
+    }
+
+    Console.WriteLine($"Schema verificado: {string.Join(", ", expectedTables.Order())}.");
+
+    foreach (var table in CatalogDefinition.Tables)
+    {
+        await using var countCommand = connection.CreateCommand();
+        countCommand.CommandText = $"SELECT COUNT(*) FROM public.{table.Name}";
+        var count = (long)(await countCommand.ExecuteScalarAsync() ?? 0L);
+        Console.WriteLine($"{table.Name}: {count} registros.");
+    }
+
+    return 0;
+}
+
+static async Task<int> CopyCatalogAsync(
+    DsqlDataSource dataSource,
+    Dictionary<string, string> options)
+{
+    var sourceUrl = GetOption(options, "source-url")
+        ?? Environment.GetEnvironmentVariable("SUPABASE_URL");
+    var sourceKey = GetOption(options, "source-key")
+        ?? Environment.GetEnvironmentVariable("SUPABASE_PUBLISHABLE_KEY");
+
+    if (string.IsNullOrWhiteSpace(sourceUrl) || string.IsNullOrWhiteSpace(sourceKey))
+    {
+        Console.Error.WriteLine(
+            "Informe --source-url e --source-key ou SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY.");
+        return 2;
+    }
+
+    using var httpClient = new HttpClient
+    {
+        BaseAddress = new Uri(sourceUrl.TrimEnd('/') + "/rest/v1/"),
+        Timeout = TimeSpan.FromSeconds(30),
+    };
+    httpClient.DefaultRequestHeaders.Add("apikey", sourceKey);
+    httpClient.DefaultRequestHeaders.Authorization =
+        new AuthenticationHeaderValue("Bearer", sourceKey);
+
+    var selectedTables = (GetOption(options, "tables") ?? string.Empty)
+        .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+        .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    var tables = selectedTables.Count == 0
+        ? CatalogDefinition.Tables
+        : CatalogDefinition.Tables
+            .Where(table => selectedTables.Contains(table.Name))
+            .ToArray();
+
+    if (tables.Length != (selectedTables.Count == 0 ? CatalogDefinition.Tables.Length : selectedTables.Count))
+    {
+        Console.Error.WriteLine("--tables contém uma tabela que não faz parte do catálogo migrável.");
+        return 2;
+    }
+
+    foreach (var table in tables)
+    {
+        var copiedRows = await CopyTableAsync(httpClient, dataSource, table);
+        Console.WriteLine($"{table.Name}: {copiedRows} registros copiados.");
+    }
+
+    return 0;
+}
+
+static async Task<int> CopyTableAsync(
+    HttpClient httpClient,
+    DsqlDataSource dataSource,
+    TableDefinition table)
+{
+    const int pageSize = 100;
+    var copiedRows = 0;
+
+    while (true)
+    {
+        var requestPath = $"{table.Name}?select=*&order={table.OrderBy}"
+            + $"&limit={pageSize}&offset={copiedRows}";
+        using var response = await httpClient.GetAsync(requestPath);
+        response.EnsureSuccessStatusCode();
+        await using var responseStream = await response.Content.ReadAsStreamAsync();
+        using var document = await JsonDocument.ParseAsync(responseStream);
+        var rows = document.RootElement;
+
+        await UpsertRowsAsync(dataSource, table, rows);
+        copiedRows += rows.GetArrayLength();
+        Console.WriteLine($"{table.Name}: {copiedRows} processados...");
+
+        if (rows.GetArrayLength() < pageSize)
+        {
+            return copiedRows;
+        }
+    }
+}
+
+static async Task UpsertRowsAsync(
+    DsqlDataSource dataSource,
+    TableDefinition table,
+    JsonElement rows)
+{
+    await dataSource.WithTransactionRetryAsync(async connection =>
+    {
+        foreach (var row in rows.EnumerateArray())
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText = table.UpsertSql;
+
+            foreach (var column in table.Columns)
+            {
+                AddParameter(command, column, row.GetProperty(column.Name));
+            }
+
+            await command.ExecuteNonQueryAsync();
+        }
+    });
+}
+
+static void AddParameter(NpgsqlCommand command, ColumnDefinition column, JsonElement value)
+{
+    var parameter = command.Parameters.Add(column.Name, column.Type);
+
+    if (value.ValueKind == JsonValueKind.Null)
+    {
+        parameter.Value = DBNull.Value;
+        return;
+    }
+
+    parameter.Value = column.Type switch
+    {
+        NpgsqlDbType.Integer => value.GetInt32(),
+        NpgsqlDbType.Boolean => value.GetBoolean(),
+        NpgsqlDbType.Uuid => value.GetGuid(),
+        NpgsqlDbType.Date => DateOnly.Parse(value.GetString()!, CultureInfo.InvariantCulture),
+        NpgsqlDbType.TimestampTz => DateTimeOffset.Parse(
+            value.GetString()!,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.RoundtripKind),
+        NpgsqlDbType.Jsonb => value.GetRawText(),
+        _ => value.GetString()!,
+    };
+}
+
+static Dictionary<string, string> ParseOptions(string[] values)
+{
+    var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+    for (var index = 0; index < values.Length; index += 2)
+    {
+        if (!values[index].StartsWith("--", StringComparison.Ordinal)
+            || index + 1 >= values.Length)
+        {
+            throw new ArgumentException($"Opção inválida: {values[index]}");
+        }
+
+        result[values[index][2..]] = values[index + 1];
+    }
+
+    return result;
+}
+
+static string? GetOption(Dictionary<string, string> options, string name) =>
+    options.GetValueOrDefault(name);
+
+static void PrintUsage()
+{
+    Console.WriteLine("""
+        dotnet run --project backend/SpotLight.Database.Tool -- <comando> --endpoint <endpoint> [opções]
+
+        Comandos:
+          apply-schema  [--schema <arquivo.sql>]
+          verify-schema
+          copy-catalog  --source-url <url> --source-key <chave-publicável> [--tables games,daily_featured]
+
+        Também aceita DSQL_ENDPOINT, SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY.
+        """);
+}
+
+internal static class CatalogDefinition
+{
+    public static readonly TableDefinition[] Tables =
+    [
+    new(
+        "games",
+        "app_id.asc",
+        ["app_id"],
+        [
+            new("app_id", NpgsqlDbType.Integer),
+            new("title", NpgsqlDbType.Text),
+            new("image", NpgsqlDbType.Text),
+            new("short_description", NpgsqlDbType.Text),
+            new("genre", NpgsqlDbType.Text),
+            new("tags", NpgsqlDbType.Jsonb),
+            new("active_players", NpgsqlDbType.Integer),
+            new("community_rating", NpgsqlDbType.Integer),
+            new("price", NpgsqlDbType.Text),
+            new("price_original", NpgsqlDbType.Text),
+            new("discount_percent", NpgsqlDbType.Integer),
+            new("release_date", NpgsqlDbType.Text),
+            new("developer", NpgsqlDbType.Text),
+            new("publisher", NpgsqlDbType.Text),
+            new("platforms", NpgsqlDbType.Jsonb),
+            new("background_image", NpgsqlDbType.Text),
+            new("trailer_url", NpgsqlDbType.Text),
+            new("trailer_thumbnail", NpgsqlDbType.Text),
+            new("steam_url", NpgsqlDbType.Text),
+            new("screenshot_urls", NpgsqlDbType.Jsonb),
+            new("media_synced_at", NpgsqlDbType.TimestampTz),
+            new("last_synced", NpgsqlDbType.TimestampTz),
+        ]),
+    new(
+        "game_localizations",
+        "app_id.asc,locale.asc",
+        ["app_id", "locale"],
+        [
+            new("app_id", NpgsqlDbType.Integer),
+            new("locale", NpgsqlDbType.Text),
+            new("title", NpgsqlDbType.Text),
+            new("short_description", NpgsqlDbType.Text),
+            new("genre", NpgsqlDbType.Text),
+            new("tags", NpgsqlDbType.Jsonb),
+            new("updated_at", NpgsqlDbType.TimestampTz),
+        ]),
+    new(
+        "daily_featured",
+        "featured_date.asc",
+        ["featured_date"],
+        [
+            new("id", NpgsqlDbType.Uuid),
+            new("app_id", NpgsqlDbType.Integer),
+            new("featured_date", NpgsqlDbType.Date),
+            new("created_at", NpgsqlDbType.TimestampTz),
+        ]),
+    ];
+}
+
+internal sealed record ColumnDefinition(string Name, NpgsqlDbType Type);
+
+internal sealed record TableDefinition(
+    string Name,
+    string OrderBy,
+    string[] KeyColumns,
+    ColumnDefinition[] Columns)
+{
+    public string UpsertSql { get; } = BuildUpsertSql(Name, KeyColumns, Columns);
+
+    private static string BuildUpsertSql(
+        string tableName,
+        string[] keyColumns,
+        ColumnDefinition[] columns)
+    {
+        var columnNames = string.Join(", ", columns.Select(column => column.Name));
+        var parameters = string.Join(", ", columns.Select(column => $"@{column.Name}"));
+        var conflictColumns = string.Join(", ", keyColumns);
+        var updates = string.Join(
+            ", ",
+            columns
+                .Where(column => !keyColumns.Contains(column.Name, StringComparer.Ordinal))
+                .Select(column => $"{column.Name} = EXCLUDED.{column.Name}"));
+
+        return $"INSERT INTO public.{tableName} ({columnNames}) VALUES ({parameters}) "
+            + $"ON CONFLICT ({conflictColumns}) DO UPDATE SET {updates}";
+    }
+}

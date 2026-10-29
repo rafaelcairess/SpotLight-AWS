@@ -127,6 +127,7 @@ O frontend é organizado por domínios de negócio. Hooks reutilizáveis concent
 | Dados         | TanStack Query, Supabase e PostgreSQL       | Cache no cliente e segurança por RLS    |
 | Backend atual | Supabase + Edge Functions com Deno          | Dados, segredos e integrações atuais    |
 | Nova API      | ASP.NET Core 10, EF Core e Npgsql           | Migração incremental, ainda sem tráfego |
+| Banco alvo    | Aurora DSQL com autenticação IAM            | Catálogo AWS sem senha e de baixo custo |
 | Qualidade     | Vitest, ESLint, Prettier e TypeScript       | Validação automática em cada mudança    |
 | Entrega       | Amazon S3, CloudFront, ACM e GitHub Actions | Deploy estático com CDN e domínio HTTPS |
 
@@ -144,19 +145,20 @@ React + TypeScript
    └── capacidades migradas ─────────► API ASP.NET Core 10
                                           │
                                           ├── JWT emitido pelo Supabase
-                                          └── PostgreSQL via EF Core/Npgsql
+                                          └── Aurora DSQL via EF Core/Npgsql + IAM
 ```
 
 #### Estado da migração
 
 - [x] Estrutura da API ASP.NET Core 10 e configuração validada.
 - [x] Autenticação JWT/JWKS compatível com o Supabase Auth.
-- [x] Health checks de processo e PostgreSQL.
+- [x] Health checks de processo e do provedor de banco selecionado.
 - [x] Primeira leitura de catálogo em `GET /api/games/{appId}`.
 - [x] Identidade autenticada em `GET /api/me`.
 - [x] Testes automatizados da API integrados à CI.
 - [x] Definir uma implantação opcional e de baixo custo em Lambda Function URL.
 - [x] Preparar a primeira leitura do frontend com rollback para o Supabase.
+- [x] Criar schema DSQL e copiar 3.457 jogos, 24 localizações e 254 destaques.
 - [ ] Opcional: publicar a API somente quando uma demonstração remota for necessária.
 - [ ] Habilitar a primeira leitura remota com `VITE_GAME_READ_SOURCE=api`.
 - [ ] Mover escritas e Edge Functions somente após validar as leituras em produção.
@@ -168,7 +170,8 @@ produção. O plano completo, com riscos e critérios de rollback, está em
 > [!IMPORTANT]
 > A prioridade atual é manter o portfólio com custo zero ou muito baixo. A API C# permanece pronta
 > para execução local e CI; sua infraestrutura AWS é opcional e nunca é criada por um push comum.
-> Não fazem parte desta fase: RDS, RDS Proxy, VPC, NAT Gateway, ECS, App Runner ou servidor ligado
+> O protótipo usa Aurora DSQL dentro da franquia gratuita permanente documentada pela AWS. Não
+> fazem parte desta fase: RDS, RDS Proxy, VPC, NAT Gateway, ECS, App Runner ou servidor ligado
 > continuamente.
 
 ## Segurança e qualidade

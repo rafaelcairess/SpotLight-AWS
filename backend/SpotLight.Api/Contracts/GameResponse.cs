@@ -19,6 +19,7 @@ public sealed record GameResponse(
     string? BackgroundImage,
     string? TrailerUrl,
     string? TrailerThumbnail,
+    string? SteamUrl,
     string[] ScreenshotUrls,
     DateTimeOffset? MediaSyncedAt,
     DateTimeOffset LastSynced);

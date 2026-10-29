@@ -24,7 +24,6 @@ jobs:
     env:
       AWS_REGION: sa-east-1
       API_ALLOWED_ORIGIN: ${{ vars.API_ALLOWED_ORIGIN }}
-      API_DATABASE_PARAMETER_NAME: ${{ vars.API_DATABASE_PARAMETER_NAME }}
       SUPABASE_AUTH_ISSUER: ${{ vars.SUPABASE_AUTH_ISSUER }}
       SUPABASE_AUTH_AUDIENCE: ${{ vars.SUPABASE_AUTH_AUDIENCE }}
 
@@ -66,4 +65,3 @@ jobs:
           AllowedOrigin="$API_ALLOWED_ORIGIN"
           SupabaseAuthIssuer="$SUPABASE_AUTH_ISSUER"
           SupabaseAuthAudience="$SUPABASE_AUTH_AUDIENCE"
-          DatabaseParameterName="$API_DATABASE_PARAMETER_NAME"

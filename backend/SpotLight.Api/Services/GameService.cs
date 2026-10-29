@@ -32,6 +32,7 @@ public sealed class GameService(IGameRepository repository) : IGameService
                 game.BackgroundImage,
                 game.TrailerUrl,
                 game.TrailerThumbnail,
+                game.SteamUrl,
                 game.ScreenshotUrls,
                 game.MediaSyncedAt,
                 game.LastSynced);

@@ -29,7 +29,18 @@ inventariados antes de qualquer cutover; copiar somente tabelas não preservaria
 - **Conclusão:** API compila, testes independem do banco e readiness verifica PostgreSQL quando
   configurado.
 
-## Fase 2 — Mover leituras do frontend para API — em andamento
+## Fase 2 — Preparar o catálogo no Aurora DSQL — concluída em protótipo
+
+- **Objetivo:** validar um banco AWS sem senha e com franquia permanente para as leituras públicas.
+- **Implementação:** cluster DSQL de região única em `sa-east-1`, schema compatível e cópia
+  idempotente de `games`, `game_localizations` e `daily_featured`.
+- **Decisão de custo:** `steam_apps` não é replicada; é um índice operacional bruto e não faz parte
+  da experiência publicada.
+- **Validação:** 3.457 jogos, 24 localizações e 254 destaques copiados; leitura de Dota 2 e readiness
+  executados pela API C# local usando IAM.
+- **Rollback:** o frontend continua lendo Supabase e o cluster protótipo pode ser removido.
+
+## Fase 3 — Mover leituras do frontend para API — em andamento
 
 - **Objetivo:** migrar consultas públicas e depois consultas autenticadas, começando pelo catálogo.
 - **Riscos:** diferenças de filtros, paginação, RLS e desempenho.
@@ -39,35 +50,35 @@ inventariados antes de qualquer cutover; copiar somente tabelas não preservaria
 - **Estado:** a leitura individual de jogos está disponível por configuração e retorna ao Supabase
   em caso de falha. As leituras de catálogo, busca e destaque ainda usam Supabase diretamente.
 
-## Fase 3 — Mover escritas e regras de negócio para API
+## Fase 4 — Mover escritas e regras de negócio para API
 
 - **Objetivo:** centralizar biblioteca, reviews, listas e regras de autorização.
 - **Riscos:** dupla escrita, perda de garantias hoje implementadas por RLS/triggers e concorrência.
 - **Rollback:** interromper novas rotas de escrita e reativar o caminho Supabase anterior.
 - **Conclusão:** cada escrita é idempotente quando necessário, auditável e coberta por testes.
 
-## Fase 4 — Mover Edge Functions para API/Lambda
+## Fase 5 — Mover Edge Functions para API/Lambda
 
 - **Objetivo:** portar integrações e tarefas assíncronas mantendo contratos e limites atuais.
 - **Riscos:** callbacks OAuth, secrets, retries, rate limiting e agendamentos divergirem.
 - **Rollback:** manter a função Supabase original ativa até validação paralela do substituto.
 - **Conclusão:** cada função substituída possui observabilidade, retries e teste ponta a ponta.
 
-## Fase 5 — Criar RDS PostgreSQL e migrar dados
+## Fase 6 — Migrar dados privados para DSQL
 
-- **Objetivo:** provisionar o banco alvo e executar ensaios de cópia completos.
-- **Riscos:** custo, extensões incompatíveis, downtime e perda de dados.
-- **Rollback:** descartar o ensaio e manter Supabase PostgreSQL como origem autoritativa.
-- **Conclusão:** schema, dados, funções necessárias e desempenho são validados em ambiente isolado.
+- **Objetivo:** portar perfis, biblioteca, reviews, listas e social após mover RLS/triggers para C#.
+- **Riscos:** autorização incompleta, diferenças de SQL, concorrência OCC e perda de dados.
+- **Rollback:** descartar o ensaio e manter Supabase como origem autoritativa.
+- **Conclusão:** schema, dados, regras C# e desempenho são validados em ambiente isolado.
 
-## Fase 6 — Fazer cutover do PostgreSQL
+## Fase 7 — Fazer cutover do banco
 
-- **Objetivo:** promover o RDS a banco principal com janela e plano de sincronização definidos.
+- **Objetivo:** promover o DSQL a banco principal com janela e plano de sincronização definidos.
 - **Riscos:** gravações durante a troca, DNS/conectividade e rollback com dados divergentes.
 - **Rollback:** interromper escritas, reconciliar dados e restaurar a connection string anterior.
 - **Conclusão:** consistência validada, métricas estáveis e período de observação concluído.
 
-## Fase 7 — Migrar Auth para Cognito
+## Fase 8 — Migrar Auth para Cognito
 
 - **Objetivo:** trocar a validação e os fluxos de identidade sem acoplar regras de negócio ao
   provedor.
@@ -75,14 +86,14 @@ inventariados antes de qualquer cutover; copiar somente tabelas não preservaria
 - **Rollback:** aceitar novamente apenas o emissor Supabase e preservar o mapeamento de IDs.
 - **Conclusão:** login, recuperação, autorização e migração de identidades passam nos testes.
 
-## Fase 8 — Migrar Storage para S3
+## Fase 9 — Migrar Storage para S3
 
 - **Objetivo:** mover avatares e futuros objetos para S3 com URLs e permissões controladas.
 - **Riscos:** objetos ausentes, URLs antigas, exposição pública e cache.
 - **Rollback:** manter leitura no Storage antigo enquanto a cópia permanece íntegra.
 - **Conclusão:** inventário e checksums conferem e nenhum upload novo depende do Supabase Storage.
 
-## Fase 9 — Remover dependências restantes do Supabase
+## Fase 10 — Remover dependências restantes do Supabase
 
 - **Objetivo:** retirar SDK, configurações, funções e recursos que não são mais utilizados.
 - **Riscos:** dependência pouco visível ou tarefa agendada ainda ativa.

@@ -29,6 +29,25 @@ public sealed class DataConfigurationTests
     }
 
     [Fact]
+    public void AuroraDsqlMappingStoresArraysAsJsonb()
+    {
+        var options = new DbContextOptionsBuilder<SpotLightDbContext>()
+            .UseNpgsql("Host=localhost;Database=spotlight_model_test")
+            .Options;
+        var settings = Options.Create(new DatabaseSettings
+        {
+            Provider = DatabaseProvider.AuroraDsql,
+        });
+        using var dbContext = new SpotLightDbContext(options, settings);
+        var entity = dbContext.Model.FindEntityType(typeof(Game));
+
+        Assert.NotNull(entity);
+        Assert.Equal("jsonb", entity.FindProperty(nameof(Game.Tags))?.GetColumnType());
+        Assert.Equal("jsonb", entity.FindProperty(nameof(Game.Platforms))?.GetColumnType());
+        Assert.Equal("jsonb", entity.FindProperty(nameof(Game.ScreenshotUrls))?.GetColumnType());
+    }
+
+    [Fact]
     public void RequiredDatabaseWithoutConnectionStringFailsClearly()
     {
         var configuration = new ConfigurationBuilder()
@@ -43,6 +62,43 @@ public sealed class DataConfigurationTests
             services.AddSpotLightData(configuration));
 
         Assert.Contains("ConnectionStrings:DefaultConnection", exception.Message);
+    }
+
+    [Fact]
+    public void RequiredAuroraDsqlWithoutEndpointFailsClearly()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Database:Provider"] = "AuroraDsql",
+                ["Database:Required"] = "true",
+            })
+            .Build();
+        var services = new ServiceCollection();
+
+        var exception = Assert.Throws<OptionsValidationException>(() =>
+            services.AddSpotLightData(configuration));
+
+        Assert.Contains("Database:AuroraDsqlEndpoint", exception.Message);
+    }
+
+    [Fact]
+    public void OptionalAuroraDsqlWithoutEndpointKeepsApiAvailable()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Database:Provider"] = "AuroraDsql",
+                ["Database:Required"] = "false",
+            })
+            .Build();
+        var services = new ServiceCollection();
+
+        services.AddSpotLightData(configuration);
+
+        Assert.Contains(
+            services,
+            descriptor => descriptor.ServiceType == typeof(Repositories.IGameRepository));
     }
 
     [Theory]

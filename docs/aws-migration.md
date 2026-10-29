@@ -22,8 +22,12 @@ Supabase atual
 
 A aplicação está disponível em `https://spotlight.rafaelcpires.abrdns.com`. A API ASP.NET Core 10
 permanece fora do ambiente publicado e não é necessária para manter o site no ar. Uma implantação
-opcional e de baixo custo em Lambda Function URL está preparada em `infra/api/template.yaml`; o
-frontend estático continua independente e não depende de contêineres.
+opcional em Lambda Function URL com Aurora DSQL está preparada em `infra/api/template.yaml`; o
+frontend estático continua independente e não depende de contêineres, RDS, VPC ou NAT.
+
+O primeiro ensaio do catálogo no DSQL já foi concluído em `sa-east-1`: 3.457 jogos, 24
+localizações e 254 destaques. Supabase continua sendo a origem de produção e o frontend ainda não
+recebe tráfego da API C#.
 
 ## Build estático
 
@@ -147,12 +151,13 @@ Checklist funcional para a publicação futura:
 
 1. Domínio e HTTPS com Route 53 e ACM, se houver domínio próprio.
 2. CI/CD com GitHub Actions, sync para S3 e invalidação do CloudFront.
-3. Opcionalmente publicar a Function URL definida em `infra/api/template.yaml` para demonstração.
-4. Avaliação da migração de Supabase Auth para Cognito.
-5. Avaliação de PostgreSQL para RDS ou Aurora PostgreSQL.
-6. Migração de arquivos do Supabase Storage para S3.
-7. Avaliação de contêineres somente se algum workload futuro não se adequar ao modelo serverless.
-8. Terraform depois que a arquitetura manual estiver compreendida e validada.
+3. Criar papel SQL de leitura no DSQL e substituir o acesso protótipo de `admin`.
+4. Publicar manualmente a Function URL definida em `infra/api/template.yaml` para homologação.
+5. Habilitar o canário de leitura do catálogo e comparar respostas com Supabase.
+6. Migrar Supabase Auth para Cognito somente após estabilizar as leituras.
+7. Migrar arquivos do Supabase Storage para S3.
+8. Avaliar contêineres somente se algum workload futuro não se adequar ao modelo serverless.
+9. Terraform depois que a arquitetura manual estiver compreendida e validada.
 
 Evite nesta fase NAT Gateway, ALB, EC2 permanente, RDS e serviços executados 24 horas.
 Além de não serem necessários para o frontend estático, eles podem gerar cobrança mesmo

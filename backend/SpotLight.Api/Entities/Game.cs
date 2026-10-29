@@ -38,6 +38,8 @@ public sealed class Game
 
     public string? TrailerThumbnail { get; init; }
 
+    public string? SteamUrl { get; init; }
+
     public string[] ScreenshotUrls { get; init; } = [];
 
     public DateTimeOffset? MediaSyncedAt { get; init; }

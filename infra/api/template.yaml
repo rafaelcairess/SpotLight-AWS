@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: Optional low-cost SpotLight ASP.NET Core API on a Lambda Function URL
+Description: Low-cost SpotLight ASP.NET Core API with an Aurora DSQL catalog
 
 Parameters:
   StageName:
@@ -16,10 +16,6 @@ Parameters:
   SupabaseAuthAudience:
     Type: String
     Default: authenticated
-  DatabaseParameterName:
-    Type: String
-    Description: SSM Standard SecureString parameter containing the connection string
-
 Globals:
   Function:
     Runtime: dotnet10
@@ -37,10 +33,25 @@ Globals:
         Cors__AllowedOrigins__0: !Ref AllowedOrigin
         SupabaseAuth__Issuer: !Ref SupabaseAuthIssuer
         SupabaseAuth__Audience: !Ref SupabaseAuthAudience
+        Database__Provider: AuroraDsql
         Database__Required: "true"
-        ConnectionStrings__DefaultConnection: !Sub "{{resolve:ssm-secure:${DatabaseParameterName}}}"
+        Database__AuroraDsqlEndpoint: !GetAtt CatalogCluster.Endpoint
+        Database__AuroraDsqlUser: admin
+        Database__AuroraDsqlOccMaxRetries: "3"
 
 Resources:
+  CatalogCluster:
+    Type: AWS::DSQL::Cluster
+    Properties:
+      DeletionProtectionEnabled: false
+      Tags:
+        - Key: Project
+          Value: SpotLight
+        - Key: Environment
+          Value: !Ref StageName
+        - Key: Workload
+          Value: catalog
+
   ApiLogs:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -56,6 +67,12 @@ Resources:
       CodeUri: ../../backend/SpotLight.Api/
       Handler: SpotLight.Api
       ReservedConcurrentExecutions: 2
+      Policies:
+        - Statement:
+            - Sid: ConnectToCatalogWithIam
+              Effect: Allow
+              Action: dsql:DbConnectAdmin
+              Resource: !GetAtt CatalogCluster.ResourceArn
       FunctionUrlConfig:
         AuthType: NONE
         Cors:
@@ -74,3 +91,7 @@ Outputs:
     Value: !GetAtt ApiFunctionUrl.FunctionUrl
   FunctionName:
     Value: !Ref ApiFunction
+  CatalogClusterIdentifier:
+    Value: !Ref CatalogCluster
+  CatalogClusterEndpoint:
+    Value: !GetAtt CatalogCluster.Endpoint
