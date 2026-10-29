@@ -10,6 +10,8 @@ public interface ICurrentUser
 
     string Role { get; }
 
+    bool IsAdmin { get; }
+
     string? AuthenticationLevel { get; }
 
     bool IsAnonymous { get; }

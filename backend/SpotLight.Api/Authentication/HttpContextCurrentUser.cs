@@ -16,6 +16,8 @@ public sealed class HttpContextCurrentUser(IHttpContextAccessor httpContextAcces
 
     public string Role => Principal?.FindFirstValue("role") ?? "authenticated";
 
+    public bool IsAdmin => ProtectedClaims.IsAdmin(Principal);
+
     public string? AuthenticationLevel => Principal?.FindFirstValue("aal");
 
     public bool IsAnonymous => bool.TryParse(

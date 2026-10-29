@@ -23,6 +23,11 @@ catch (ArgumentException exception)
     return 2;
 }
 
+if (args[0].Equals("validate-private-schema", StringComparison.OrdinalIgnoreCase))
+{
+    return await ValidatePrivateSchemaAsync(options);
+}
+
 var endpoint = GetOption(options, "endpoint")
     ?? Environment.GetEnvironmentVariable("DSQL_ENDPOINT");
 
@@ -82,6 +87,114 @@ static async Task<int> ApplySchemaAsync(
     }
 
     Console.WriteLine($"Schema aplicado com sucesso em {endpoint} ({statements.Length} comandos).");
+    return 0;
+}
+
+static async Task<int> ValidatePrivateSchemaAsync(Dictionary<string, string> options)
+{
+    var schemaPath = GetOption(options, "schema")
+        ?? Path.Combine("backend", "schema", "dsql", "010_private_shadow.sql");
+    var indexPath = GetOption(options, "indexes")
+        ?? Path.Combine("backend", "schema", "dsql", "011_private_indexes.sql");
+
+    foreach (var path in new[] { schemaPath, indexPath })
+    {
+        if (!File.Exists(path))
+        {
+            Console.Error.WriteLine($"Arquivo não encontrado: {Path.GetFullPath(path)}");
+            return 2;
+        }
+    }
+
+    var schema = await File.ReadAllTextAsync(schemaPath);
+    var indexes = await File.ReadAllTextAsync(indexPath);
+    var statements = Regex.Replace(schema, @"^\s*--.*$", string.Empty, RegexOptions.Multiline);
+    var expectedTables = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "app_users",
+        "user_identities",
+        "profiles",
+        "user_games",
+        "user_game_platinum_platforms",
+        "user_top_games",
+        "profile_platinum_showcase",
+        "reviews",
+        "review_reactions",
+        "user_lists",
+        "user_list_games",
+        "follows",
+        "friend_requests",
+        "notifications",
+        "profile_comments",
+        "price_alerts",
+        "feedback",
+        "rate_limits",
+    };
+    var actualTables = Regex.Matches(
+            statements,
+            @"CREATE\s+TABLE\s+IF\s+NOT\s+EXISTS\s+spotlight_private\.([a-z0-9_]+)",
+            RegexOptions.IgnoreCase)
+        .Select(match => match.Groups[1].Value)
+        .ToHashSet(StringComparer.Ordinal);
+
+    var missingTables = expectedTables.Except(actualTables).Order().ToArray();
+    var unexpectedTables = actualTables.Except(expectedTables).Order().ToArray();
+    if (missingTables.Length > 0 || unexpectedTables.Length > 0)
+    {
+        Console.Error.WriteLine(
+            $"Tabelas divergentes. Ausentes: {string.Join(", ", missingTables)}; "
+            + $"inesperadas: {string.Join(", ", unexpectedTables)}.");
+        return 1;
+    }
+
+    string[] forbiddenPatterns =
+    [
+        @"\bROW\s+LEVEL\s+SECURITY\b",
+        @"\bCREATE\s+POLICY\b",
+        @"\bCREATE\s+TRIGGER\b",
+        @"\bLANGUAGE\s+PLPGSQL\b",
+        @"\bSECURITY\s+DEFINER\b",
+        @"\bAUTH\.UID\b",
+        @"\bGRANT\b",
+        @"\bREVOKE\b",
+        @"CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?public\.",
+    ];
+
+    foreach (var pattern in forbiddenPatterns)
+    {
+        if (Regex.IsMatch(statements, pattern, RegexOptions.IgnoreCase))
+        {
+            Console.Error.WriteLine($"Construção proibida encontrada no shadow schema: {pattern}");
+            return 1;
+        }
+    }
+
+    var indexStatements = Regex.Matches(
+        Regex.Replace(indexes, @"^\s*--.*$", string.Empty, RegexOptions.Multiline),
+        @"CREATE\s+(?:UNIQUE\s+)?INDEX[^;]+;",
+        RegexOptions.IgnoreCase);
+    if (indexStatements.Count == 0
+        || indexStatements.Cast<Match>().Any(match => !Regex.IsMatch(
+            match.Value,
+            @"CREATE\s+(?:UNIQUE\s+)?INDEX\s+ASYNC",
+            RegexOptions.IgnoreCase)))
+    {
+        Console.Error.WriteLine("Todo índice secundário deve usar CREATE INDEX ASYNC.");
+        return 1;
+    }
+
+    if (!Regex.IsMatch(
+        indexes,
+        @"CREATE\s+UNIQUE\s+INDEX\s+ASYNC[^;]+friend_requests_active_pair_unique[^;]+WHERE\s+status\s+IN",
+        RegexOptions.IgnoreCase))
+    {
+        Console.Error.WriteLine("O índice único de amizade ativa está ausente ou inválido.");
+        return 1;
+    }
+
+    Console.WriteLine(
+        $"Shadow schema validado localmente: {actualTables.Count} tabelas e "
+        + $"{indexStatements.Count} índices. Nenhuma conexão foi aberta.");
     return 0;
 }
 
@@ -378,6 +491,7 @@ static void PrintUsage()
 
         Comandos:
           apply-schema  [--schema <arquivo.sql>]
+          validate-private-schema [--schema <arquivo.sql>] [--indexes <arquivo.sql>]
           verify-schema
           copy-catalog  --source-url <url> --source-key <chave-publicável> [--tables games,daily_featured]
           grant-reader  --iam-arn <arn-iam> [--role spotlight_api]

@@ -73,6 +73,11 @@ como `jsonb` no DSQL e convertidos pelo `SpotLightDbContext`; o modelo HTTP cont
 bruto `steam_apps` não é replicado porque não atende páginas nem endpoints e consumiria a franquia
 gratuita sem benefício.
 
+O shadow schema privado em `010_private_shadow.sql` e seus índices em
+`011_private_indexes.sql` são apenas artefatos de revisão. O comando padrão, a CI e o cluster não os
+aplicam. Consulte [`backend/schema/dsql/README.md`](schema/dsql/README.md) antes de qualquer ensaio.
+O comando `validate-private-schema` realiza somente verificações locais e não exige endpoint AWS.
+
 ```powershell
 dotnet run --project backend\SpotLight.Database.Tool -- apply-schema --endpoint <endpoint>
 dotnet run --project backend\SpotLight.Database.Tool -- verify-schema --endpoint <endpoint>

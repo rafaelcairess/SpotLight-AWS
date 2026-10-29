@@ -61,6 +61,13 @@ public static class SupabaseAuthenticationExtensions
                 policy.RequireClaim("sub");
                 policy.RequireClaim("role", "authenticated");
             });
+            options.AddPolicy(AuthorizationPolicies.AdminUser, policy =>
+            {
+                policy.RequireAuthenticatedUser();
+                policy.RequireClaim("sub");
+                policy.RequireClaim("role", "authenticated");
+                policy.RequireAssertion(context => ProtectedClaims.IsAdmin(context.User));
+            });
         });
 
         return services;

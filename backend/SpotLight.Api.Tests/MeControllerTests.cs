@@ -84,6 +84,8 @@ public sealed class MeControllerTests : IClassFixture<WebApplicationFactory<Prog
 
         public string Role { get; init; } = "authenticated";
 
+        public bool IsAdmin { get; init; }
+
         public string? AuthenticationLevel { get; init; }
 
         public bool IsAnonymous { get; init; }

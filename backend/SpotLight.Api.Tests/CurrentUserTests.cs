@@ -17,6 +17,7 @@ public sealed class CurrentUserTests
             new Claim("role", "authenticated"),
             new Claim("aal", "aal2"),
             new Claim("is_anonymous", "true"),
+            new Claim("app_metadata", "{\"role\":\"admin\",\"provider\":\"email\"}"),
         };
         var accessor = new HttpContextAccessor
         {
@@ -34,6 +35,7 @@ public sealed class CurrentUserTests
         Assert.Equal("authenticated", currentUser.Role);
         Assert.Equal("aal2", currentUser.AuthenticationLevel);
         Assert.True(currentUser.IsAnonymous);
+        Assert.True(currentUser.IsAdmin);
     }
 
     [Fact]
@@ -52,5 +54,44 @@ public sealed class CurrentUserTests
         var currentUser = new HttpContextCurrentUser(accessor);
 
         Assert.Null(currentUser.UserId);
+    }
+
+    [Theory]
+    [InlineData("{\"role\":\"authenticated\"}")]
+    [InlineData("{\"role\":\"Admin\"}")]
+    [InlineData("not-json")]
+    [InlineData("")]
+    public void UntrustedOrMalformedClaimsDoNotGrantAdmin(string appMetadata)
+    {
+        var claims = new[]
+        {
+            new Claim("app_metadata", appMetadata),
+            new Claim("user_metadata", "{\"role\":\"admin\"}"),
+            new Claim("is_admin", "true"),
+        };
+        var accessor = new HttpContextAccessor
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal(new ClaimsIdentity(claims, "Test")),
+            },
+        };
+
+        Assert.False(new HttpContextCurrentUser(accessor).IsAdmin);
+    }
+
+    [Fact]
+    public void AdminMetadataWithoutAuthenticatedIdentityDoesNotGrantAdmin()
+    {
+        var accessor = new HttpContextAccessor
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal(new ClaimsIdentity(
+                    [new Claim("app_metadata", "{\"role\":\"admin\"}")]))
+            },
+        };
+
+        Assert.False(new HttpContextCurrentUser(accessor).IsAdmin);
     }
 }

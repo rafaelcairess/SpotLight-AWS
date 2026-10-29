@@ -63,11 +63,13 @@ inventariados antes de qualquer cutover; copiar somente tabelas não preservaria
   [`docs/private-rules-inventory.md`](../docs/private-rules-inventory.md). O DSQL não suporta RLS,
   triggers ou PL/pgSQL; autorização por usuário e efeitos automáticos serão explícitos na API C#,
   enquanto FKs, checks e índices únicos preservarão a integridade no banco.
-- **Estado da implementação:** a primeira matriz de autorização cobre perfil, biblioteca, reviews,
-  comentários e jogos privados/ocultos. Ela falha fechada para valores desconhecidos e ainda não é
-  usada por endpoints, pois nenhum dado privado foi copiado.
-- **Próximo passo:** desenhar e revisar o shadow schema privado e ampliar os testes para propriedade,
-  transições sociais e autoridade administrativa, sem liberar o papel de escrita.
+- **Estado da implementação:** as matrizes de autorização cobrem perfil, biblioteca, reviews,
+  comentários, jogos privados/ocultos, autoridade administrativa e transições sociais. O shadow
+  schema privado com 18 tabelas e índices separados está versionado, mas não é aplicado por nenhum
+  comando padrão ou workflow.
+- **Próximo passo:** criar um validador explícito do shadow schema e revisar o modelo de quotas e
+  idempotência antes de considerar um ensaio em schema descartável. Nenhum dado privado será
+  copiado e nenhum papel de escrita será liberado nessa revisão.
 
 ## Fase 5 — Mover Edge Functions para API/Lambda
 

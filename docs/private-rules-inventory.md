@@ -167,7 +167,8 @@ e-mail ou campos de sincronização que não façam parte da tela.
 
 ### Etapa B — Shadow schema privado
 
-1. Criar tabela local de principais e tabelas privadas com FKs, checks e índices únicos.
+1. Criar tabela local de principais e tabelas privadas com FKs, checks e índices únicos. O rascunho
+   está em `backend/schema/dsql/010_private_shadow.sql`, isolado do comando padrão.
 2. Criar papel runtime separado do `spotlight_api`, com escrita apenas no schema privado.
 3. Copiar dados para shadow sem tráfego, reconciliando contagens e referências.
 4. Não copiar tokens de plataforma sem criptografia e rotação definidas.
@@ -202,3 +203,13 @@ Auth migra para Cognito e avatares para S3 somente depois da estabilização dos
 - estratégia de idempotência e retry para cada transação com efeitos;
 - plano de rollback por capacidade, sem escrita dupla implícita;
 - nenhuma mudança de produção antes da revisão local.
+
+## Estado da implementação
+
+- matrizes de perfil, conteúdo, autoridade administrativa e grafo social criadas e cobertas por
+  testes;
+- shadow schema com 18 tabelas criado apenas como artefato versionado;
+- índices secundários e o índice único de amizade ativa definidos em arquivo separado;
+- testes impedem dependência de RLS, triggers, PL/pgSQL, `auth.uid()` e grants no schema;
+- comando `validate-private-schema` verifica os artefatos sem abrir conexão;
+- nenhuma tabela privada, índice ou papel de escrita foi criado no cluster.

@@ -160,6 +160,7 @@ React + TypeScript
 - [x] Preparar o canário de leitura do frontend com rollback por consulta para o Supabase.
 - [x] Criar schema DSQL e copiar 3.457 jogos, 24 localizações e 254 destaques.
 - [x] Inventariar RLS, triggers, quotas e fluxos privilegiados antes da migração privada.
+- [x] Especificar o shadow schema privado e as primeiras políticas C# sem aplicá-los ao cluster.
 - [ ] Opcional: publicar a API somente quando uma demonstração remota for necessária.
 - [ ] Habilitar a primeira leitura remota com `VITE_GAME_READ_SOURCE=api`.
 - [ ] Mover escritas e Edge Functions somente após validar as leituras em produção.
