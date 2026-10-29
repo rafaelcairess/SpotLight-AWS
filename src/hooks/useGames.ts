@@ -7,7 +7,16 @@ import { getPosterImage } from "@/lib/steam";
 import { isLikelyGame } from "@/lib/gameFilters";
 import { sortByPopularity } from "@/lib/sort";
 import { mapGameRow, type GameRow } from "@/features/games/data/gameMapper";
-import { fetchGameByIdFromApi, shouldReadGamesFromApi } from "@/features/games/data/gamesApi";
+import {
+  fetchDailyFeaturedFromApi,
+  fetchDiscountedGamesFromApi,
+  fetchGameByIdFromApi,
+  fetchGamesByIdsFromApi,
+  fetchPopularGamesFromApi,
+  fetchRecentGamesFromApi,
+  searchGamesFromApi,
+  shouldReadGamesFromApi,
+} from "@/features/games/data/gamesApi";
 
 type GameLocalizationRow = {
   app_id: number;
@@ -121,7 +130,15 @@ export function usePopularGames(limit = 10) {
 
   return useQuery({
     queryKey: ["games", "popular", locale, limit],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
+      if (shouldReadGamesFromApi) {
+        try {
+          return await fetchPopularGamesFromApi(limit, locale, signal);
+        } catch {
+          // Supabase remains the rollback path while the C# read is in canary.
+        }
+      }
+
       return fetchGamesWithLocalization(
         () =>
           supabase
@@ -144,7 +161,15 @@ export function useAllGames(limit = 200, enabled = true) {
 
   return useQuery({
     queryKey: ["games", "all", locale, limit],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
+      if (shouldReadGamesFromApi) {
+        try {
+          return await fetchRecentGamesFromApi(limit, locale, signal);
+        } catch {
+          // Supabase remains the rollback path while the C# read is in canary.
+        }
+      }
+
       return fetchGamesWithLocalization(
         () =>
           supabase
@@ -166,7 +191,15 @@ export function useDiscountedGamesPaged(limit = 30, page = 1) {
 
   return useQuery({
     queryKey: ["games", "discounted", "paged", locale, limit, page],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
+      if (shouldReadGamesFromApi) {
+        try {
+          return await fetchDiscountedGamesFromApi(page, limit, locale, signal);
+        } catch {
+          // Supabase remains the rollback path while the C# read is in canary.
+        }
+      }
+
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
@@ -196,8 +229,16 @@ export function useGamesByIds(appIds: number[]) {
 
   return useQuery({
     queryKey: ["games", "by-ids", locale, uniqueIds],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       if (uniqueIds.length === 0) return [];
+
+      if (shouldReadGamesFromApi) {
+        try {
+          return await fetchGamesByIdsFromApi(uniqueIds, locale, signal);
+        } catch {
+          // Supabase remains the rollback path while the C# read is in canary.
+        }
+      }
 
       return fetchGamesWithLocalization(
         () => supabase.from("games").select("*").in("app_id", uniqueIds),
@@ -224,8 +265,19 @@ export function useSearchCatalog(query: string, limit = 20) {
 
   return useQuery<CatalogGame[]>({
     queryKey: ["games", "catalog-search", normalized, locale, limit],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       if (normalized.length < 2) return [];
+
+      if (shouldReadGamesFromApi) {
+        try {
+          const apiGames = await searchGamesFromApi(normalized, limit, locale, signal);
+          if (apiGames.length > 0) {
+            return sortByPopularity(apiGames.map((game) => ({ ...game, hasDetails: true })));
+          }
+        } catch {
+          // Supabase remains the rollback path while the C# read is in canary.
+        }
+      }
 
       // 1) Tenta via steam_apps (cache local do app list).
       let list: SteamAppRow[] = [];
@@ -315,10 +367,9 @@ export function useGameById(appId?: number) {
 
       if (shouldReadGamesFromApi) {
         try {
-          const apiGame = await fetchGameByIdFromApi(appId as number, signal);
+          const apiGame = await fetchGameByIdFromApi(appId as number, locale, signal);
           if (apiGame) {
-            const localized = await localizeGames([apiGame], locale);
-            return localized[0] ?? apiGame;
+            return apiGame;
           }
         } catch {
           // Supabase remains the rollback path while the C# read is in canary.
@@ -370,7 +421,16 @@ export function useDailyFeaturedGame() {
 
   return useQuery({
     queryKey: ["games", "featured", "daily", locale],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
+      if (shouldReadGamesFromApi) {
+        try {
+          const apiGame = await fetchDailyFeaturedFromApi(locale, signal);
+          if (apiGame) return apiGame;
+        } catch {
+          // Supabase remains the rollback path while the C# read is in canary.
+        }
+      }
+
       const { data: featured, error: featuredError } = await supabase
         .from("daily_featured")
         .select("app_id, featured_date")

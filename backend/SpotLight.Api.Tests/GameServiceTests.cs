@@ -20,7 +20,7 @@ public sealed class GameServiceTests
         });
         var service = new GameService(repository);
 
-        var result = await service.GetByAppIdAsync(730, CancellationToken.None);
+        var result = await service.GetByAppIdAsync(730, "pt", CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Equal(730, result.AppId);
@@ -33,12 +33,34 @@ public sealed class GameServiceTests
     {
         var service = new GameService(new FakeGameRepository(null));
 
-        var result = await service.GetByAppIdAsync(10, CancellationToken.None);
+        var result = await service.GetByAppIdAsync(10, "pt", CancellationToken.None);
 
         Assert.Null(result);
     }
 
-    private sealed class FakeGameRepository(Game? game) : IGameRepository
+    [Fact]
+    public async Task GetByAppId_AppliesRequestedLocalization()
+    {
+        var repository = new FakeGameRepository(
+            new Game { AppId = 570, Title = "Dota 2", ShortDescription = "Default" },
+            new GameLocalization
+            {
+                AppId = 570,
+                Locale = "es",
+                Title = "Dota 2 localizado",
+                ShortDescription = "Descripción localizada",
+            });
+        var service = new GameService(repository);
+
+        var result = await service.GetByAppIdAsync(570, "es", CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal("Dota 2 localizado", result.Title);
+        Assert.Equal("Descripción localizada", result.ShortDescription);
+    }
+
+    private sealed class FakeGameRepository(Game? game, GameLocalization? localization = null)
+        : IGameRepository
     {
         public int? RequestedAppId { get; private set; }
 
@@ -46,6 +68,49 @@ public sealed class GameServiceTests
         {
             RequestedAppId = appId;
             return Task.FromResult(game);
+        }
+
+        public Task<IReadOnlyList<Game>> FindPopularAsync(
+            int limit,
+            CancellationToken cancellationToken) =>
+            Task.FromResult<IReadOnlyList<Game>>(game is null ? [] : [game]);
+
+        public Task<IReadOnlyList<Game>> FindRecentAsync(
+            int limit,
+            CancellationToken cancellationToken) =>
+            FindPopularAsync(limit, cancellationToken);
+
+        public Task<(IReadOnlyList<Game> Games, int Total)> FindDiscountedAsync(
+            int page,
+            int limit,
+            CancellationToken cancellationToken)
+        {
+            IReadOnlyList<Game> games = game is null ? [] : [game];
+            return Task.FromResult((games, games.Count));
+        }
+
+        public Task<IReadOnlyList<Game>> FindByAppIdsAsync(
+            IReadOnlyCollection<int> appIds,
+            CancellationToken cancellationToken) =>
+            FindPopularAsync(appIds.Count, cancellationToken);
+
+        public Task<IReadOnlyList<Game>> SearchAsync(
+            string query,
+            int limit,
+            CancellationToken cancellationToken) =>
+            FindPopularAsync(limit, cancellationToken);
+
+        public Task<Game?> FindDailyFeaturedAsync(CancellationToken cancellationToken) =>
+            Task.FromResult(game);
+
+        public Task<IReadOnlyList<GameLocalization>> FindLocalizationsAsync(
+            IReadOnlyCollection<int> appIds,
+            string locale,
+            CancellationToken cancellationToken)
+        {
+            IReadOnlyList<GameLocalization> localizations =
+                localization is not null && localization.Locale == locale ? [localization] : [];
+            return Task.FromResult(localizations);
         }
     }
 }

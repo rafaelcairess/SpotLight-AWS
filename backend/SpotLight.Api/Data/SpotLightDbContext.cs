@@ -48,6 +48,10 @@ public sealed class SpotLightDbContext : DbContext
 
     public DbSet<Game> Games => Set<Game>();
 
+    public DbSet<GameLocalization> GameLocalizations => Set<GameLocalization>();
+
+    public DbSet<DailyFeatured> DailyFeatured => Set<DailyFeatured>();
+
     internal DatabaseProvider DatabaseProvider => databaseProvider;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -93,6 +97,30 @@ public sealed class SpotLightDbContext : DbContext
                 .Metadata.SetValueComparer(StringArrayComparer);
             game.Property(entity => entity.ScreenshotUrls).HasColumnType("jsonb");
         }
+
+        var localization = modelBuilder.Entity<GameLocalization>();
+        localization.ToTable("game_localizations", "public");
+        localization.HasKey(entity => new { entity.AppId, entity.Locale });
+        localization.Property(entity => entity.AppId).HasColumnName("app_id");
+        localization.Property(entity => entity.Locale).HasColumnName("locale");
+        localization.Property(entity => entity.Title).HasColumnName("title");
+        localization.Property(entity => entity.ShortDescription).HasColumnName("short_description");
+        localization.Property(entity => entity.Genre).HasColumnName("genre");
+        localization.Property(entity => entity.Tags).HasColumnName("tags");
+        localization.Property(entity => entity.UpdatedAt).HasColumnName("updated_at");
+
+        if (databaseProvider == DatabaseProvider.AuroraDsql)
+        {
+            ConfigureJsonArray(localization.Property(entity => entity.Tags));
+        }
+
+        var featured = modelBuilder.Entity<DailyFeatured>();
+        featured.ToTable("daily_featured", "public");
+        featured.HasKey(entity => entity.Id);
+        featured.Property(entity => entity.Id).HasColumnName("id").ValueGeneratedNever();
+        featured.Property(entity => entity.AppId).HasColumnName("app_id");
+        featured.Property(entity => entity.FeaturedDate).HasColumnName("featured_date");
+        featured.Property(entity => entity.CreatedAt).HasColumnName("created_at");
     }
 
     private static void ConfigureJsonArray(

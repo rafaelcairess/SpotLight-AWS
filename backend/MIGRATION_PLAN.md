@@ -40,15 +40,18 @@ inventariados antes de qualquer cutover; copiar somente tabelas não preservaria
   executados pela API C# local usando IAM.
 - **Rollback:** o frontend continua lendo Supabase e o cluster protótipo pode ser removido.
 
-## Fase 3 — Mover leituras do frontend para API — em andamento
+## Fase 3 — Mover leituras públicas do catálogo — concluída localmente
 
-- **Objetivo:** migrar consultas públicas e depois consultas autenticadas, começando pelo catálogo.
+- **Objetivo:** migrar as consultas públicas do catálogo antes das consultas autenticadas.
 - **Riscos:** diferenças de filtros, paginação, RLS e desempenho.
 - **Rollback:** retornar cada hook ao cliente Supabase por configuração ou reversão isolada.
 - **Conclusão:** leituras escolhidas usam somente contratos HTTP documentados e têm métricas
   comparáveis às consultas antigas.
-- **Estado:** a leitura individual de jogos está disponível por configuração e retorna ao Supabase
-  em caso de falha. As leituras de catálogo, busca e destaque ainda usam Supabase diretamente.
+- **Estado:** detalhe, populares, recentes, promoções paginadas, lotes, busca e destaque diário estão
+  disponíveis por configuração. Cada consulta retorna ao Supabase em caso de falha; a busca também
+  usa o índice amplo legado quando o catálogo DSQL não encontra resultados.
+- **Validação:** os endpoints foram executados contra o protótipo DSQL com o papel somente leitura
+  `spotlight_api`; o canário permanece apenas local até a homologação visual e remota.
 
 ## Fase 4 — Mover escritas e regras de negócio para API
 

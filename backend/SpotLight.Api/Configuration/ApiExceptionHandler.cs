@@ -21,7 +21,7 @@ public sealed class ApiExceptionHandler(
 
         if (isDatabaseUnavailable)
         {
-            logger.LogWarning("A operação solicitada requer PostgreSQL configurado.");
+            logger.LogWarning("A operação solicitada requer um banco de dados configurado.");
         }
         else
         {

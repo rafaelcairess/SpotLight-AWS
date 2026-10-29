@@ -15,9 +15,9 @@ de usuário continuam ativos durante a transição.
 - `Authentication`: validação JWT atual e abstração `ICurrentUser`.
 - `Configuration`: opções validadas e tratamento global de erros.
 
-O primeiro fluxo de dados é `GET /api/games/{appId}`. Ele demonstra
-Controller → Service → Repository → DbContext usando a tabela real `public.games`, sem substituir
-ainda as chamadas do frontend.
+O catálogo público segue Controller → Service → Repository → DbContext usando as tabelas reais
+`public.games`, `public.game_localizations` e `public.daily_featured`. O frontend pode habilitar
+essas leituras como canário e mantém fallback para o Supabase por consulta.
 
 ## Endpoints
 
@@ -26,7 +26,13 @@ ainda as chamadas do frontend.
 - `GET /health/ready`: verifica as dependências configuradas, incluindo PostgreSQL.
 - `GET /health`: alias de readiness para compatibilidade.
 - `GET /api/me`: retorna a identidade validada pelo JWT atual.
-- `GET /api/games/{appId}`: primeira leitura PostgreSQL preparada para migração gradual.
+- `GET /api/games/{appId}`: detalhe de um jogo, localizado por `locale`.
+- `GET /api/games/popular`: jogos ativos com melhor alcance e avaliação.
+- `GET /api/games/recent`: catálogo ordenado pela sincronização mais recente.
+- `GET /api/games/discounted`: promoções paginadas.
+- `GET /api/games/batch`: lote de até 100 identificadores `appId`.
+- `GET /api/games/search`: busca por título no catálogo completo.
+- `GET /api/games/featured`: destaque diário mais recente.
 
 Swagger/OpenAPI fica disponível apenas em `Development`.
 

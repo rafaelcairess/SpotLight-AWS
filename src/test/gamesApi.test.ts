@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchGameByIdFromApi, mapGameApiResponse } from "@/features/games/data/gamesApi";
+import {
+  fetchDiscountedGamesFromApi,
+  fetchGameByIdFromApi,
+  fetchGamesByIdsFromApi,
+  mapGameApiResponse,
+} from "@/features/games/data/gamesApi";
 
 const apiGame = {
   appId: 730,
@@ -46,5 +51,29 @@ describe("gamesApi", () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(null, { status: 503 })));
 
     await expect(fetchGameByIdFromApi(730)).rejects.toThrow("HTTP 503");
+  });
+
+  it("maps a discounted page from the C# contract", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(Response.json({ games: [apiGame], total: 42, page: 2, limit: 1 })),
+    );
+
+    await expect(fetchDiscountedGamesFromApi(2, 1, "pt")).resolves.toMatchObject({
+      games: [{ app_id: 730, title: "Counter-Strike & 2" }],
+      count: 42,
+    });
+  });
+
+  it("sends repeated appId parameters when loading a batch", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(Response.json([]));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await fetchGamesByIdsFromApi([570, 730], "es");
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("appId=570&appId=730&locale=es"),
+      expect.any(Object),
+    );
   });
 });

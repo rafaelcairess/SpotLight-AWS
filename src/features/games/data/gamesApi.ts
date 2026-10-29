@@ -25,6 +25,13 @@ type GameApiResponse = {
   mediaSyncedAt: string | null;
 };
 
+type GamePageApiResponse = {
+  games: GameApiResponse[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
 export const shouldReadGamesFromApi = GAME_READ_SOURCE === "api" && API_URL.length > 0;
 
 const optionalText = (value: string | null) => (value ? decodeHtmlEntities(value) : undefined);
@@ -54,14 +61,93 @@ export const mapGameApiResponse = (game: GameApiResponse): GameData => ({
 
 export async function fetchGameByIdFromApi(
   appId: number,
+  locale = "pt",
   signal?: AbortSignal,
 ): Promise<GameData | null> {
-  const response = await fetch(`${API_URL}/api/games/${appId}`, {
+  const response = await fetch(
+    `${API_URL}/api/games/${appId}?locale=${encodeURIComponent(locale)}`,
+    {
+      headers: { Accept: "application/json" },
+      signal,
+    },
+  );
+
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error(`SpotLight API respondeu com HTTP ${response.status}.`);
+  }
+
+  return mapGameApiResponse((await response.json()) as GameApiResponse);
+}
+
+const fetchGameList = async (path: string, signal?: AbortSignal): Promise<GameData[]> => {
+  const response = await fetch(`${API_URL}${path}`, {
     headers: { Accept: "application/json" },
     signal,
   });
 
-  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error(`SpotLight API respondeu com HTTP ${response.status}.`);
+  }
+
+  return ((await response.json()) as GameApiResponse[]).map(mapGameApiResponse);
+};
+
+const localeQuery = (locale: string) => `locale=${encodeURIComponent(locale)}`;
+
+export const fetchPopularGamesFromApi = (limit: number, locale: string, signal?: AbortSignal) =>
+  fetchGameList(`/api/games/popular?limit=${limit}&${localeQuery(locale)}`, signal);
+
+export const fetchRecentGamesFromApi = (limit: number, locale: string, signal?: AbortSignal) =>
+  fetchGameList(`/api/games/recent?limit=${limit}&${localeQuery(locale)}`, signal);
+
+export async function fetchDiscountedGamesFromApi(
+  page: number,
+  limit: number,
+  locale: string,
+  signal?: AbortSignal,
+) {
+  const response = await fetch(
+    `${API_URL}/api/games/discounted?page=${page}&limit=${limit}&${localeQuery(locale)}`,
+    { headers: { Accept: "application/json" }, signal },
+  );
+
+  if (!response.ok) {
+    throw new Error(`SpotLight API respondeu com HTTP ${response.status}.`);
+  }
+
+  const result = (await response.json()) as GamePageApiResponse;
+  return { games: result.games.map(mapGameApiResponse), count: result.total };
+}
+
+export function fetchGamesByIdsFromApi(appIds: number[], locale: string, signal?: AbortSignal) {
+  const query = new URLSearchParams();
+  appIds.forEach((appId) => query.append("appId", String(appId)));
+  query.set("locale", locale);
+  return fetchGameList(`/api/games/batch?${query.toString()}`, signal);
+}
+
+export const searchGamesFromApi = (
+  query: string,
+  limit: number,
+  locale: string,
+  signal?: AbortSignal,
+) =>
+  fetchGameList(
+    `/api/games/search?q=${encodeURIComponent(query)}&limit=${limit}&${localeQuery(locale)}`,
+    signal,
+  );
+
+export async function fetchDailyFeaturedFromApi(
+  locale: string,
+  signal?: AbortSignal,
+): Promise<GameData | null> {
+  const response = await fetch(`${API_URL}/api/games/featured?${localeQuery(locale)}`, {
+    headers: { Accept: "application/json" },
+    signal,
+  });
+
+  if (response.status === 204) return null;
   if (!response.ok) {
     throw new Error(`SpotLight API respondeu com HTTP ${response.status}.`);
   }

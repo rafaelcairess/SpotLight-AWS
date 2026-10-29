@@ -25,9 +25,10 @@ permanece fora do ambiente publicado e não é necessária para manter o site no
 opcional em Lambda Function URL com Aurora DSQL está preparada em `infra/api/template.yaml`; o
 frontend estático continua independente e não depende de contêineres, RDS, VPC ou NAT.
 
-O primeiro ensaio do catálogo no DSQL já foi concluído em `sa-east-1`: 3.457 jogos, 24
-localizações e 254 destaques. Supabase continua sendo a origem de produção e o frontend ainda não
-recebe tráfego da API C#.
+O ensaio do catálogo no DSQL já foi concluído em `sa-east-1`: 3.457 jogos, 24 localizações e 254
+destaques. O canário local cobre as leituras públicas do catálogo e possui fallback por consulta;
+Supabase continua sendo a origem de produção e o frontend publicado ainda não recebe tráfego da
+API C#.
 
 ## Build estático
 
@@ -46,9 +47,10 @@ VITE_GAME_READ_SOURCE=supabase
 publicável do Supabase são entregues ao navegador por definição; nunca use uma chave
 `service_role` em variável `VITE_*`.
 
-`VITE_GAME_READ_SOURCE=api` habilita apenas a leitura individual de jogos já portada. Ela exige
-`VITE_API_URL` e retorna ao Supabase se a API estiver indisponível. Mantenha `supabase` em produção
-até a homologação ter logs e métricas suficientes.
+`VITE_GAME_READ_SOURCE=api` habilita detalhe, populares, recentes, promoções, lotes, busca e
+destaque diário pela API C#. Ela exige `VITE_API_URL` e retorna ao Supabase por consulta quando a
+API estiver indisponível ou quando a busca não encontrar o índice completo. Mantenha `supabase` em
+produção até a homologação ter logs e métricas suficientes.
 
 ```powershell
 npm ci
@@ -151,13 +153,12 @@ Checklist funcional para a publicação futura:
 
 1. Domínio e HTTPS com Route 53 e ACM, se houver domínio próprio.
 2. CI/CD com GitHub Actions, sync para S3 e invalidação do CloudFront.
-3. Criar papel SQL de leitura no DSQL e substituir o acesso protótipo de `admin`.
-4. Publicar manualmente a Function URL definida em `infra/api/template.yaml` para homologação.
-5. Habilitar o canário de leitura do catálogo e comparar respostas com Supabase.
-6. Migrar Supabase Auth para Cognito somente após estabilizar as leituras.
-7. Migrar arquivos do Supabase Storage para S3.
-8. Avaliar contêineres somente se algum workload futuro não se adequar ao modelo serverless.
-9. Terraform depois que a arquitetura manual estiver compreendida e validada.
+3. Publicar manualmente a Function URL definida em `infra/api/template.yaml` para homologação.
+4. Habilitar o canário remoto do catálogo e comparar respostas com Supabase.
+5. Migrar Supabase Auth para Cognito somente após estabilizar as leituras.
+6. Migrar arquivos do Supabase Storage para S3.
+7. Avaliar contêineres somente se algum workload futuro não se adequar ao modelo serverless.
+8. Terraform depois que a arquitetura manual estiver compreendida e validada.
 
 Evite nesta fase NAT Gateway, ALB, EC2 permanente, RDS e serviços executados 24 horas.
 Além de não serem necessários para o frontend estático, eles podem gerar cobrança mesmo

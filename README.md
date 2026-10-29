@@ -153,11 +153,11 @@ React + TypeScript
 - [x] Estrutura da API ASP.NET Core 10 e configuração validada.
 - [x] Autenticação JWT/JWKS compatível com o Supabase Auth.
 - [x] Health checks de processo e do provedor de banco selecionado.
-- [x] Primeira leitura de catálogo em `GET /api/games/{appId}`.
+- [x] Leituras públicas do catálogo em C#: detalhe, listas, promoções, busca e destaque diário.
 - [x] Identidade autenticada em `GET /api/me`.
 - [x] Testes automatizados da API integrados à CI.
 - [x] Definir uma implantação opcional e de baixo custo em Lambda Function URL.
-- [x] Preparar a primeira leitura do frontend com rollback para o Supabase.
+- [x] Preparar o canário de leitura do frontend com rollback por consulta para o Supabase.
 - [x] Criar schema DSQL e copiar 3.457 jogos, 24 localizações e 254 destaques.
 - [ ] Opcional: publicar a API somente quando uma demonstração remota for necessária.
 - [ ] Habilitar a primeira leitura remota com `VITE_GAME_READ_SOURCE=api`.
@@ -217,9 +217,11 @@ dotnet run --project backend\SpotLight.Api --urls http://localhost:5080
 
 Em desenvolvimento, o Swagger fica disponível em `http://localhost:5080/swagger` e os health
 checks em `http://localhost:5080/health/live` e `http://localhost:5080/health/ready`. Definir
-`VITE_API_URL=http://localhost:5080` disponibiliza o endereço da API. Para habilitar o canário da
-leitura individual de jogos, use também `VITE_GAME_READ_SOURCE=api`; as consultas ainda não
-portadas e qualquer falha dessa leitura continuam no Supabase.
+`VITE_API_URL=http://localhost:5080` disponibiliza o endereço da API. Para habilitar o canário das
+leituras públicas do catálogo, use também `VITE_GAME_READ_SOURCE=api`. Detalhe, populares,
+recentes, promoções, lotes, busca e destaque diário tentam a API C# primeiro; uma falha isolada
+retorna ao Supabase sem interromper a página. Autenticação, perfis, coleções e escritas continuam
+no Supabase nesta fase.
 
 Valide a API com:
 
