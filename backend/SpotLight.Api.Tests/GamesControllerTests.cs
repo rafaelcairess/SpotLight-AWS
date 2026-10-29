@@ -18,13 +18,14 @@ public sealed class GamesControllerTests : IClassFixture<WebApplicationFactory<P
     public async Task Get_WhenDatabaseIsNotConfigured_ReturnsSafeServiceUnavailableProblem()
     {
         using var client = _application.CreateClient();
+        var cancellationToken = TestContext.Current.CancellationToken;
 
-        using var response = await client.GetAsync("/api/games/730");
+        using var response = await client.GetAsync("/api/games/730", cancellationToken);
 
         Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
         Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
 
-        var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
+        var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>(cancellationToken);
         Assert.NotNull(problem);
         Assert.Equal("Banco de dados indisponível", problem.Title);
         Assert.DoesNotContain("ConnectionStrings", problem.Detail, StringComparison.OrdinalIgnoreCase);

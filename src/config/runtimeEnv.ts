@@ -1,5 +1,6 @@
 type SpotlightRuntimeEnv = {
   VITE_API_URL?: string;
+  VITE_GAME_READ_SOURCE?: "supabase" | "api";
   VITE_SITE_URL?: string;
   VITE_SUPABASE_PUBLISHABLE_KEY?: string;
   VITE_SUPABASE_URL?: string;
@@ -30,3 +31,5 @@ export const SUPABASE_PUBLISHABLE_KEY =
   runtimeEnv.VITE_SUPABASE_PUBLISHABLE_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY;
 
 export const API_URL = (runtimeEnv.VITE_API_URL || "").replace(/\/$/, "");
+
+export const GAME_READ_SOURCE = runtimeEnv.VITE_GAME_READ_SOURCE === "api" ? "api" : "supabase";

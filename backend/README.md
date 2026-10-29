@@ -1,6 +1,6 @@
 # Backend do SpotLight
 
-API ASP.NET Core .NET 8 preparada para assumir gradualmente o acesso a dados hoje feito pelo
+API ASP.NET Core .NET 10 preparada para assumir gradualmente o acesso a dados hoje feito pelo
 frontend. Supabase Auth e os serviços atuais continuam ativos durante a transição.
 
 ## Estrutura
@@ -48,9 +48,10 @@ fornecida, o readiness passa a executar `CanConnectAsync` no PostgreSQL.
 
 Nenhuma migration EF é criada ou aplicada automaticamente no startup.
 
-O modelo de publicação da API ainda não foi escolhido. O frontend atual continua estático em
-S3/CloudFront e não depende de Docker; a primeira opção a ser avaliada para a API é o caminho
-serverless descrito em `docs/aws-migration.md`.
+O site não depende da publicação desta API. Para manter o portfólio com custo zero ou muito baixo,
+a API continua executável localmente e validada pela CI. Uma implantação pública opcional em AWS
+Lambda Function URL está definida em `infra/api/template.yaml`; ela elimina API Gateway e não é
+executada automaticamente. O desenvolvimento local usa Kestrel e não depende de Docker.
 
 ## Desenvolvimento local
 

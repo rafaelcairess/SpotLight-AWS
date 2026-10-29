@@ -1,0 +1,69 @@
+name: Deploy API Staging
+
+on:
+  workflow_dispatch:
+    inputs:
+      stack_name:
+        description: CloudFormation stack name
+        required: true
+        default: spotlight-api-staging
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: api-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: staging
+    env:
+      AWS_REGION: sa-east-1
+      API_ALLOWED_ORIGIN: ${{ vars.API_ALLOWED_ORIGIN }}
+      API_DATABASE_PARAMETER_NAME: ${{ vars.API_DATABASE_PARAMETER_NAME }}
+      SUPABASE_AUTH_ISSUER: ${{ vars.SUPABASE_AUTH_ISSUER }}
+      SUPABASE_AUTH_AUDIENCE: ${{ vars.SUPABASE_AUTH_AUDIENCE }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Setup AWS SAM
+        uses: aws-actions/setup-sam@f84ec7d548307efafe33230528756de3c5841a17 # v2
+
+      - name: Authenticate with AWS
+        uses: aws-actions/configure-aws-credentials@cabfdba3510de1431bac9dba27511d97497fc100 # v5
+        with:
+          role-to-assume: ${{ secrets.AWS_API_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Validate template
+        run: sam validate --lint --template-file infra/api/template.yaml
+
+      - name: Build API
+        run: sam build --template-file infra/api/template.yaml
+
+      - name: Deploy staging stack
+        run: >-
+          sam deploy
+          --stack-name "${{ inputs.stack_name }}"
+          --region "$AWS_REGION"
+          --resolve-s3
+          --capabilities CAPABILITY_IAM
+          --no-confirm-changeset
+          --no-fail-on-empty-changeset
+          --parameter-overrides
+          StageName=staging
+          AllowedOrigin="$API_ALLOWED_ORIGIN"
+          SupabaseAuthIssuer="$SUPABASE_AUTH_ISSUER"
+          SupabaseAuthAudience="$SUPABASE_AUTH_AUDIENCE"
+          DatabaseParameterName="$API_DATABASE_PARAMETER_NAME"

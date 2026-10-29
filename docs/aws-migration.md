@@ -20,10 +20,10 @@ React/Vite
 Supabase atual
 ```
 
-A aplicação está disponível em `https://spotlight.rafaelcpires.abrdns.com`. A API
-ASP.NET Core permanece no código como base da migração gradual, mas ainda não faz parte
-do ambiente publicado. Seu modelo de execução será definido somente quando o backend
-começar a receber tráfego; o frontend estático não depende de contêineres.
+A aplicação está disponível em `https://spotlight.rafaelcpires.abrdns.com`. A API ASP.NET Core 10
+permanece fora do ambiente publicado e não é necessária para manter o site no ar. Uma implantação
+opcional e de baixo custo em Lambda Function URL está preparada em `infra/api/template.yaml`; o
+frontend estático continua independente e não depende de contêineres.
 
 ## Build estático
 
@@ -35,11 +35,16 @@ VITE_SITE_URL=https://spotlight.rafaelcpires.abrdns.com
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
 VITE_API_URL=
+VITE_GAME_READ_SOURCE=supabase
 ```
 
 `VITE_SITE_URL` define canonical, Open Graph e demais URLs públicas. A URL e a chave
 publicável do Supabase são entregues ao navegador por definição; nunca use uma chave
 `service_role` em variável `VITE_*`.
+
+`VITE_GAME_READ_SOURCE=api` habilita apenas a leitura individual de jogos já portada. Ela exige
+`VITE_API_URL` e retorna ao Supabase se a API estiver indisponível. Mantenha `supabase` em produção
+até a homologação ter logs e métricas suficientes.
 
 ```powershell
 npm ci
@@ -138,11 +143,11 @@ Checklist funcional para a publicação futura:
 - confirmar que uma origem não cadastrada não recebe `Access-Control-Allow-Origin`;
 - verificar no navegador que nenhum segredo privado aparece nos arquivos de `dist/`.
 
-## Fases posteriores
+## Próximas fases
 
 1. Domínio e HTTPS com Route 53 e ACM, se houver domínio próprio.
 2. CI/CD com GitHub Actions, sync para S3 e invalidação do CloudFront.
-3. Backend serverless com API Gateway, Lambda e CloudWatch.
+3. Opcionalmente publicar a Function URL definida em `infra/api/template.yaml` para demonstração.
 4. Avaliação da migração de Supabase Auth para Cognito.
 5. Avaliação de PostgreSQL para RDS ou Aurora PostgreSQL.
 6. Migração de arquivos do Supabase Storage para S3.

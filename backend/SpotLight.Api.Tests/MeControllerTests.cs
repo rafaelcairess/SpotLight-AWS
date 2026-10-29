@@ -62,12 +62,13 @@ public sealed class MeControllerTests : IClassFixture<WebApplicationFactory<Prog
     public async Task Get_WithoutBearerToken_ReturnsStandardUnauthorizedProblem()
     {
         using var client = _application.CreateClient();
-        using var response = await client.GetAsync("/api/me");
+        var cancellationToken = TestContext.Current.CancellationToken;
+        using var response = await client.GetAsync("/api/me", cancellationToken);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         Assert.Equal("application/problem+json", response.Content.Headers.ContentType?.MediaType);
 
-        var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
+        var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>(cancellationToken);
         Assert.NotNull(problem);
         Assert.Equal(StatusCodes.Status401Unauthorized, problem.Status);
         Assert.Equal("Autenticação necessária", problem.Title);

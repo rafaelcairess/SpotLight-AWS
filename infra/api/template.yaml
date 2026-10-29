@@ -1,0 +1,76 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Optional low-cost SpotLight ASP.NET Core API on a Lambda Function URL
+
+Parameters:
+  StageName:
+    Type: String
+    Default: staging
+    AllowedPattern: "^[a-z0-9-]+$"
+  AllowedOrigin:
+    Type: String
+    Description: Exact frontend origin allowed by CORS
+  SupabaseAuthIssuer:
+    Type: String
+    Description: HTTPS issuer used to validate the existing Supabase JWT
+  SupabaseAuthAudience:
+    Type: String
+    Default: authenticated
+  DatabaseParameterName:
+    Type: String
+    Description: SSM Standard SecureString parameter containing the connection string
+
+Globals:
+  Function:
+    Runtime: dotnet10
+    Architectures:
+      - arm64
+    MemorySize: 512
+    Timeout: 15
+    LoggingConfig:
+      LogFormat: JSON
+      ApplicationLogLevel: Warning
+      SystemLogLevel: Warning
+    Environment:
+      Variables:
+        ASPNETCORE_ENVIRONMENT: Staging
+        Cors__AllowedOrigins__0: !Ref AllowedOrigin
+        SupabaseAuth__Issuer: !Ref SupabaseAuthIssuer
+        SupabaseAuth__Audience: !Ref SupabaseAuthAudience
+        Database__Required: "true"
+        ConnectionStrings__DefaultConnection: !Sub "{{resolve:ssm-secure:${DatabaseParameterName}}}"
+
+Resources:
+  ApiLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/spotlight-api-${StageName}"
+      RetentionInDays: 7
+
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: dotnet10
+    Properties:
+      FunctionName: !Sub "spotlight-api-${StageName}"
+      CodeUri: ../../backend/SpotLight.Api/
+      Handler: SpotLight.Api
+      ReservedConcurrentExecutions: 2
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins:
+            - !Ref AllowedOrigin
+          AllowHeaders:
+            - Authorization
+            - Content-Type
+          AllowMethods:
+            - GET
+          MaxAge: 300
+
+Outputs:
+  ApiUrl:
+    Description: Optional staging Function URL
+    Value: !GetAtt ApiFunctionUrl.FunctionUrl
+  FunctionName:
+    Value: !Ref ApiFunction

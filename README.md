@@ -17,6 +17,7 @@ e transforma esses dados em um perfil público feito para descobrir, organizar e
   <img alt="React 18" src="https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black">
   <img alt="TypeScript 5" src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white">
   <img alt="Vite 7" src="https://img.shields.io/badge/Vite-7-646CFF?style=flat-square&logo=vite&logoColor=white">
+  <img alt="ASP.NET Core 10" src="https://img.shields.io/badge/ASP.NET_Core-10-512BD4?style=flat-square&logo=dotnet&logoColor=white">
   <img alt="Supabase" src="https://img.shields.io/badge/Supabase-PostgreSQL-3FCF8E?style=flat-square&logo=supabase&logoColor=white">
   <img alt="AWS" src="https://img.shields.io/badge/AWS-S3_%2B_CloudFront-FF9900?style=flat-square&logo=amazonwebservices&logoColor=white">
 </p>
@@ -99,6 +100,8 @@ O **SpotLight** reúne essa história em um só lugar. Além da biblioteca pesso
 
 ## Arquitetura
 
+### Produção atual
+
 ```text
 Usuário
    │
@@ -117,16 +120,56 @@ React + TypeScript
 
 O frontend é organizado por domínios de negócio. Hooks reutilizáveis concentram o acesso a dados, enquanto o TanStack Query coordena cache, mutations e invalidações. Operações que dependem de segredos são executadas em Edge Functions, nunca no navegador.
 
-| Camada        | Tecnologias                                 | Decisão principal                        |
-| ------------- | ------------------------------------------- | ---------------------------------------- |
-| Frontend      | React 18, TypeScript, Vite e React Router   | SPA tipada com build estático            |
-| Interface     | Tailwind CSS, shadcn/ui e Radix UI          | Componentes consistentes e acessíveis    |
-| Dados         | TanStack Query, Supabase e PostgreSQL       | Cache no cliente e segurança por RLS     |
-| Backend atual | Edge Functions com Deno                     | Segredos e integrações fora do navegador |
-| Qualidade     | Vitest, ESLint, Prettier e TypeScript       | Validação automática em cada mudança     |
-| Entrega       | Amazon S3, CloudFront, ACM e GitHub Actions | Deploy estático com CDN e domínio HTTPS  |
+| Camada        | Tecnologias                                 | Decisão principal                       |
+| ------------- | ------------------------------------------- | --------------------------------------- |
+| Frontend      | React 18, TypeScript, Vite e React Router   | SPA tipada com build estático           |
+| Interface     | Tailwind CSS, shadcn/ui e Radix UI          | Componentes consistentes e acessíveis   |
+| Dados         | TanStack Query, Supabase e PostgreSQL       | Cache no cliente e segurança por RLS    |
+| Backend atual | Supabase + Edge Functions com Deno          | Dados, segredos e integrações atuais    |
+| Nova API      | ASP.NET Core 10, EF Core e Npgsql           | Migração incremental, ainda sem tráfego |
+| Qualidade     | Vitest, ESLint, Prettier e TypeScript       | Validação automática em cada mudança    |
+| Entrega       | Amazon S3, CloudFront, ACM e GitHub Actions | Deploy estático com CDN e domínio HTTPS |
 
-Uma API em **ASP.NET Core 8** está sendo desenvolvida como base para uma migração gradual do backend. Ela possui health check, autenticação JWT/JWKS e testes automatizados, mas ainda não faz parte do ambiente de produção.
+### Arquitetura em migração
+
+A migração para C# é uma migração da **API/backend**. O frontend React continuará sendo uma SPA
+independente. Durante a transição, o Supabase permanece como origem dos dados, provedor de
+autenticação e caminho de rollback; a aplicação não fará uma troca total de backend de uma vez.
+
+```text
+React + TypeScript
+   │
+   ├── produção atual ────────────────► Supabase + Edge Functions
+   │
+   └── capacidades migradas ─────────► API ASP.NET Core 10
+                                          │
+                                          ├── JWT emitido pelo Supabase
+                                          └── PostgreSQL via EF Core/Npgsql
+```
+
+#### Estado da migração
+
+- [x] Estrutura da API ASP.NET Core 10 e configuração validada.
+- [x] Autenticação JWT/JWKS compatível com o Supabase Auth.
+- [x] Health checks de processo e PostgreSQL.
+- [x] Primeira leitura de catálogo em `GET /api/games/{appId}`.
+- [x] Identidade autenticada em `GET /api/me`.
+- [x] Testes automatizados da API integrados à CI.
+- [x] Definir uma implantação opcional e de baixo custo em Lambda Function URL.
+- [x] Preparar a primeira leitura do frontend com rollback para o Supabase.
+- [ ] Opcional: publicar a API somente quando uma demonstração remota for necessária.
+- [ ] Habilitar a primeira leitura remota com `VITE_GAME_READ_SOURCE=api`.
+- [ ] Mover escritas e Edge Functions somente após validar as leituras em produção.
+
+Nenhuma migration do EF Core é aplicada automaticamente e a API C# ainda não recebe tráfego de
+produção. O plano completo, com riscos e critérios de rollback, está em
+[backend/MIGRATION_PLAN.md](./backend/MIGRATION_PLAN.md).
+
+> [!IMPORTANT]
+> A prioridade atual é manter o portfólio com custo zero ou muito baixo. A API C# permanece pronta
+> para execução local e CI; sua infraestrutura AWS é opcional e nunca é criada por um push comum.
+> Não fazem parte desta fase: RDS, RDS Proxy, VPC, NAT Gateway, ECS, App Runner ou servidor ligado
+> continuamente.
 
 ## Segurança e qualidade
 
@@ -160,6 +203,27 @@ npm run lint
 npm run typecheck
 npm test
 npm run build
+```
+
+Para executar também a API C# em outro terminal:
+
+```powershell
+dotnet restore backend\SpotLight.sln
+dotnet run --project backend\SpotLight.Api --urls http://localhost:5080
+```
+
+Em desenvolvimento, o Swagger fica disponível em `http://localhost:5080/swagger` e os health
+checks em `http://localhost:5080/health/live` e `http://localhost:5080/health/ready`. Definir
+`VITE_API_URL=http://localhost:5080` disponibiliza o endereço da API. Para habilitar o canário da
+leitura individual de jogos, use também `VITE_GAME_READ_SOURCE=api`; as consultas ainda não
+portadas e qualquer falha dessa leitura continuam no Supabase.
+
+Valide a API com:
+
+```powershell
+dotnet format backend\SpotLight.sln --verify-no-changes
+dotnet build backend\SpotLight.sln --configuration Release
+dotnet test backend\SpotLight.sln --configuration Release
 ```
 
 </details>

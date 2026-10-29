@@ -20,7 +20,7 @@ Relacionamentos explícitos nas migrations ligam usuários ao schema `auth.users
 itens e comentários aos usuários. Há também RLS, triggers e funções PostgreSQL que precisam ser
 inventariados antes de qualquer cutover; copiar somente tabelas não preservaria as regras atuais.
 
-## Fase 1 — Preparar API e acesso PostgreSQL
+## Fase 1 — Preparar API e acesso PostgreSQL — concluída
 
 - **Objetivo:** estabelecer configuração validada, EF Core/Npgsql, health checks e uma primeira
   leitura real sem mudar o frontend.
@@ -29,13 +29,15 @@ inventariados antes de qualquer cutover; copiar somente tabelas não preservaria
 - **Conclusão:** API compila, testes independem do banco e readiness verifica PostgreSQL quando
   configurado.
 
-## Fase 2 — Mover leituras do frontend para API
+## Fase 2 — Mover leituras do frontend para API — em andamento
 
 - **Objetivo:** migrar consultas públicas e depois consultas autenticadas, começando pelo catálogo.
 - **Riscos:** diferenças de filtros, paginação, RLS e desempenho.
 - **Rollback:** retornar cada hook ao cliente Supabase por configuração ou reversão isolada.
 - **Conclusão:** leituras escolhidas usam somente contratos HTTP documentados e têm métricas
   comparáveis às consultas antigas.
+- **Estado:** a leitura individual de jogos está disponível por configuração e retorna ao Supabase
+  em caso de falha. As leituras de catálogo, busca e destaque ainda usam Supabase diretamente.
 
 ## Fase 3 — Mover escritas e regras de negócio para API
 

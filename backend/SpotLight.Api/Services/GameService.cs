@@ -17,8 +17,23 @@ public sealed class GameService(IGameRepository repository) : IGameService
                 game.AppId,
                 game.Title,
                 game.Image,
+                game.ShortDescription,
                 game.Genre,
+                game.Tags,
                 game.ActivePlayers,
-                game.CommunityRating);
+                game.CommunityRating,
+                game.Price,
+                game.PriceOriginal,
+                game.DiscountPercent,
+                game.ReleaseDate,
+                game.Developer,
+                game.Publisher,
+                game.Platforms,
+                game.BackgroundImage,
+                game.TrailerUrl,
+                game.TrailerThumbnail,
+                game.ScreenshotUrls,
+                game.MediaSyncedAt,
+                game.LastSynced);
     }
 }

@@ -7,6 +7,7 @@ import { getPosterImage } from "@/lib/steam";
 import { isLikelyGame } from "@/lib/gameFilters";
 import { sortByPopularity } from "@/lib/sort";
 import { mapGameRow, type GameRow } from "@/features/games/data/gameMapper";
+import { fetchGameByIdFromApi, shouldReadGamesFromApi } from "@/features/games/data/gamesApi";
 
 type GameLocalizationRow = {
   app_id: number;
@@ -309,8 +310,20 @@ export function useGameById(appId?: number) {
 
   return useQuery({
     queryKey: ["games", "by-id", locale, appId],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       if (!validId) return null;
+
+      if (shouldReadGamesFromApi) {
+        try {
+          const apiGame = await fetchGameByIdFromApi(appId as number, signal);
+          if (apiGame) {
+            const localized = await localizeGames([apiGame], locale);
+            return localized[0] ?? apiGame;
+          }
+        } catch {
+          // Supabase remains the rollback path while the C# read is in canary.
+        }
+      }
 
       const { data, error } = await supabase
         .from("games")

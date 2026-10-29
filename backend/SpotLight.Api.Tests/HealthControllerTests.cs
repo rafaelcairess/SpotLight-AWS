@@ -34,8 +34,9 @@ public sealed class HealthControllerTests : IClassFixture<WebApplicationFactory<
     {
         using var client = _application.CreateClient();
 
-        using var response = await client.GetAsync(path);
-        var body = await response.Content.ReadAsStringAsync();
+        var cancellationToken = TestContext.Current.CancellationToken;
+        using var response = await client.GetAsync(path, cancellationToken);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken);
 
         response.EnsureSuccessStatusCode();
         Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
