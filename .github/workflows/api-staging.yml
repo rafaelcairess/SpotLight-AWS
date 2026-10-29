@@ -26,6 +26,8 @@ jobs:
       API_ALLOWED_ORIGIN: ${{ vars.API_ALLOWED_ORIGIN }}
       SUPABASE_AUTH_ISSUER: ${{ vars.SUPABASE_AUTH_ISSUER }}
       SUPABASE_AUTH_AUDIENCE: ${{ vars.SUPABASE_AUTH_AUDIENCE }}
+      SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
 
     steps:
       - name: Checkout
@@ -65,3 +67,29 @@ jobs:
           AllowedOrigin="$API_ALLOWED_ORIGIN"
           SupabaseAuthIssuer="$SUPABASE_AUTH_ISSUER"
           SupabaseAuthAudience="$SUPABASE_AUTH_AUDIENCE"
+
+      - name: Read stack outputs
+        id: stack
+        shell: bash
+        run: |
+          outputs="$(aws cloudformation describe-stacks \
+            --stack-name "${{ inputs.stack_name }}" \
+            --query 'Stacks[0].Outputs' \
+            --output json)"
+          echo "endpoint=$(jq -r '.[] | select(.OutputKey == "CatalogClusterEndpoint") | .OutputValue' <<< "$outputs")" >> "$GITHUB_OUTPUT"
+          echo "role_arn=$(jq -r '.[] | select(.OutputKey == "ApiExecutionRoleArn") | .OutputValue' <<< "$outputs")" >> "$GITHUB_OUTPUT"
+          echo "api_url=$(jq -r '.[] | select(.OutputKey == "ApiUrl") | .OutputValue' <<< "$outputs")" >> "$GITHUB_OUTPUT"
+
+      - name: Initialize catalog and grant read-only access
+        run: |
+          dotnet run --project backend/SpotLight.Database.Tool --configuration Release -- \
+            apply-schema --endpoint "${{ steps.stack.outputs.endpoint }}"
+          dotnet run --project backend/SpotLight.Database.Tool --configuration Release -- \
+            copy-catalog --endpoint "${{ steps.stack.outputs.endpoint }}"
+          dotnet run --project backend/SpotLight.Database.Tool --configuration Release -- \
+            grant-reader \
+            --endpoint "${{ steps.stack.outputs.endpoint }}" \
+            --iam-arn "${{ steps.stack.outputs.role_arn }}"
+
+      - name: Verify API readiness
+        run: curl --fail --retry 5 --retry-all-errors --retry-delay 2 "${{ steps.stack.outputs.api_url }}health/ready"

@@ -41,7 +41,7 @@ Use configuração do ASP.NET Core ou variáveis de ambiente. Nunca versione cre
 | `Database:Required`                   | `Database__Required`                                      | Faz o startup falhar se a conexão obrigatória estiver ausente |
 | `Database:CommandTimeoutSeconds`      | `Database__CommandTimeoutSeconds`                         | Timeout entre 1 e 300 segundos                                |
 | `Database:AuroraDsqlEndpoint`         | `Database__AuroraDsqlEndpoint`                            | Endpoint do cluster, sem usuário ou senha                     |
-| `Database:AuroraDsqlUser`             | `Database__AuroraDsqlUser`                                | Papel SQL; `admin` apenas durante o protótipo                 |
+| `Database:AuroraDsqlUser`             | `Database__AuroraDsqlUser`                                | Papel SQL, normalmente `spotlight_api`                        |
 | `Database:AuroraDsqlOccMaxRetries`    | `Database__AuroraDsqlOccMaxRetries`                       | Retentativas de conflitos OCC, de 0 a 10                      |
 | `Cors:AllowedOrigins`                 | `Cors__AllowedOrigins__0`, `Cors__AllowedOrigins__1`, ... | Origens exatas autorizadas                                    |
 | `SupabaseAuth:Issuer`                 | `SupabaseAuth__Issuer`                                    | Emissor JWT atual                                             |
@@ -71,11 +71,17 @@ gratuita sem benefício.
 dotnet run --project backend\SpotLight.Database.Tool -- apply-schema --endpoint <endpoint>
 dotnet run --project backend\SpotLight.Database.Tool -- verify-schema --endpoint <endpoint>
 dotnet run --project backend\SpotLight.Database.Tool -- copy-catalog --endpoint <endpoint>
+dotnet run --project backend\SpotLight.Database.Tool -- grant-reader --endpoint <endpoint> --iam-arn <arn>
+dotnet run --project backend\SpotLight.Database.Tool -- verify-reader --endpoint <endpoint> --user spotlight_api
 ```
 
 `copy-catalog` exige `SUPABASE_URL` e `SUPABASE_PUBLISHABLE_KEY` (ou os argumentos equivalentes) e
 acessa somente as tabelas públicas `games`, `game_localizations` e `daily_featured`. A origem
 Supabase permanece autoritativa até o canário remoto ser aprovado.
+
+`grant-reader` deve ser executado com uma identidade autorizada para `dsql:DbConnectAdmin`. Ele
+cria o papel `spotlight_api`, associa o ARN IAM informado e concede `SELECT` apenas nas tabelas do
+catálogo. A aplicação usa `dsql:DbConnect`; o acesso administrativo não faz parte do runtime.
 
 ## Desenvolvimento local
 

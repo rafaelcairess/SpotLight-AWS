@@ -18,6 +18,7 @@ o servidor quando o processo está no Lambda.
 - Apenas logs de warning, retidos por 7 dias; X-Ray fica desativado.
 - Aurora DSQL de região única, sem RDS, VPC, NAT ou senha de banco.
 - Conexão pelo papel IAM da Lambda, restrita ao ARN do cluster criado pela stack.
+- Papel SQL `spotlight_api` limitado a `SELECT` nas três tabelas do catálogo.
 - Supabase Auth permanece como emissor dos JWTs durante a migração.
 - O Supabase continua como origem autoritativa e caminho de rollback nesta fase.
 
@@ -51,20 +52,23 @@ Informe uma origem exata em `AllowedOrigin` e o issuer HTTPS do Supabase em
 `SupabaseAuthIssuer`. Não coloque chaves no repositório. O endpoint DSQL é injetado diretamente
 pelo CloudFormation e a autenticação usa o papel IAM gerado para a função.
 
-Após o deploy, valide `/health/live`, `/health/ready`, `/api/games/{appId}` e `/api/me` antes de
-configurar qualquer tráfego do frontend.
+Após o deploy, associe o `ApiExecutionRoleArn` ao papel SQL `spotlight_api`. O workflow manual faz
+isso automaticamente, aplica o schema, copia o catálogo público e valida `/health/ready` antes de
+considerar a homologação pronta.
 
 ## Deploy pelo GitHub
 
 O workflow manual `.github/workflows/api-staging.yml` exige um environment protegido chamado
 `staging` com:
 
-| Tipo     | Nome                      | Conteúdo                                   |
-| -------- | ------------------------- | ------------------------------------------ |
-| Secret   | `AWS_API_DEPLOY_ROLE_ARN` | Role OIDC autorizada a publicar a stack    |
-| Variable | `SUPABASE_AUTH_ISSUER`    | Issuer HTTPS do projeto Supabase           |
-| Variable | `API_ALLOWED_ORIGIN`      | Origem exata do frontend                   |
-| Variable | `SUPABASE_AUTH_AUDIENCE`  | Audiência JWT, normalmente `authenticated` |
+| Tipo     | Nome                       | Conteúdo                                   |
+| -------- | -------------------------- | ------------------------------------------ |
+| Secret   | `AWS_API_DEPLOY_ROLE_ARN`  | Role OIDC autorizada a publicar a stack    |
+| Variable | `SUPABASE_AUTH_ISSUER`     | Issuer HTTPS do projeto Supabase           |
+| Variable | `API_ALLOWED_ORIGIN`       | Origem exata do frontend                   |
+| Variable | `SUPABASE_AUTH_AUDIENCE`   | Audiência JWT, normalmente `authenticated` |
+| Variable | `SUPABASE_URL`             | URL pública usada para copiar o catálogo   |
+| Variable | `SUPABASE_PUBLISHABLE_KEY` | Chave publicável usada apenas para leitura |
 
 O workflow não roda em `push`; alguém precisa iniciá-lo pela aba Actions e aprovar o environment.
 Se a API pública não for necessária, não crie o environment e não execute o workflow. O cluster
@@ -82,5 +86,14 @@ repositório:
 aws dsql list-clusters --region sa-east-1
 ```
 
-Antes de publicar a API, substitua o acesso temporário `admin` por um papel SQL de leitura ligado
-ao papel IAM da Lambda e troque `dsql:DbConnectAdmin` por `dsql:DbConnect`.
+O papel OIDC usado pelo workflow precisa de `dsql:DbConnectAdmin` para executar somente o bootstrap
+do papel SQL; limite essa permissão a clusters com a tag `Project=SpotLight`. A Lambda recebe apenas
+`dsql:DbConnect` e se conecta como `spotlight_api`.
+
+Para repetir o bootstrap manualmente:
+
+```powershell
+dotnet run --project backend\SpotLight.Database.Tool -- grant-reader `
+  --endpoint <endpoint> `
+  --iam-arn <arn-do-papel-da-lambda>
+```

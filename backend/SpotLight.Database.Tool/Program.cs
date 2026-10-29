@@ -4,6 +4,7 @@ using System.Text.Json;
 using Amazon.AuroraDsql.Npgsql;
 using Npgsql;
 using NpgsqlTypes;
+using System.Text.RegularExpressions;
 
 if (args.Length == 0 || args[0] is "-h" or "--help")
 {
@@ -34,7 +35,9 @@ if (string.IsNullOrWhiteSpace(endpoint))
 await using var dataSource = await DsqlDataSource.CreateAsync(new DsqlConfig
 {
     Host = endpoint,
-    User = "admin",
+    User = GetOption(options, "user")
+        ?? Environment.GetEnvironmentVariable("DSQL_USER")
+        ?? "admin",
     OccMaxRetries = 3,
 });
 
@@ -46,6 +49,10 @@ switch (args[0].ToLowerInvariant())
         return await VerifySchemaAsync(dataSource);
     case "copy-catalog":
         return await CopyCatalogAsync(dataSource, options);
+    case "grant-reader":
+        return await GrantReaderAsync(dataSource, options);
+    case "verify-reader":
+        return await VerifyReaderAsync(dataSource);
     default:
         Console.Error.WriteLine($"Comando desconhecido: {args[0]}");
         PrintUsage();
@@ -168,6 +175,105 @@ static async Task<int> CopyCatalogAsync(
     return 0;
 }
 
+static async Task<int> GrantReaderAsync(
+    DsqlDataSource dataSource,
+    Dictionary<string, string> options)
+{
+    var iamArn = GetOption(options, "iam-arn");
+    var roleName = GetOption(options, "role") ?? "spotlight_api";
+
+    if (string.IsNullOrWhiteSpace(iamArn)
+        || !Regex.IsMatch(iamArn, "^arn:aws:iam::[0-9]{12}:(role|user)/[A-Za-z0-9+=,.@_/-]+$"))
+    {
+        Console.Error.WriteLine("--iam-arn deve ser o ARN de um usuário ou papel IAM.");
+        return 2;
+    }
+
+    if (!Regex.IsMatch(roleName, "^[a-z_][a-z0-9_]{0,62}$"))
+    {
+        Console.Error.WriteLine("--role deve ser um identificador SQL minúsculo válido.");
+        return 2;
+    }
+
+    if (!await ExistsAsync(
+            dataSource,
+            "SELECT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = @value)",
+            roleName))
+    {
+        await dataSource.ExecWithRetryAsync($"CREATE ROLE {roleName} WITH LOGIN");
+    }
+
+    if (!await MappingExistsAsync(dataSource, roleName, iamArn))
+    {
+        var escapedArn = iamArn.Replace("'", "''", StringComparison.Ordinal);
+        await dataSource.ExecWithRetryAsync($"AWS IAM GRANT {roleName} TO '{escapedArn}'");
+    }
+
+    var catalogTables = string.Join(
+        ", ",
+        CatalogDefinition.Tables.Select(table => $"public.{table.Name}"));
+    await dataSource.ExecWithRetryAsync(
+        $"GRANT SELECT ON TABLE {catalogTables} TO {roleName}");
+
+    Console.WriteLine($"Papel {roleName} associado a {iamArn} com acesso somente leitura.");
+    return 0;
+}
+
+static async Task<int> VerifyReaderAsync(DsqlDataSource dataSource)
+{
+    await using var connection = await dataSource.OpenConnectionAsync();
+    await using (var readCommand = connection.CreateCommand())
+    {
+        readCommand.CommandText = "SELECT title FROM public.games ORDER BY app_id LIMIT 1";
+        _ = await readCommand.ExecuteScalarAsync();
+    }
+
+    try
+    {
+        await using var writeCommand = connection.CreateCommand();
+        writeCommand.CommandText = "UPDATE public.games SET title = title WHERE false";
+        await writeCommand.ExecuteNonQueryAsync();
+        Console.Error.WriteLine("Falha: o papel de leitura aceitou um UPDATE.");
+        return 1;
+    }
+    catch (PostgresException exception) when (exception.SqlState == PostgresErrorCodes.InsufficientPrivilege)
+    {
+        Console.WriteLine("Papel validado: SELECT permitido e UPDATE negado.");
+        return 0;
+    }
+}
+
+static async Task<bool> ExistsAsync(
+    DsqlDataSource dataSource,
+    string sql,
+    string value)
+{
+    await using var connection = await dataSource.OpenConnectionAsync();
+    await using var command = connection.CreateCommand();
+    command.CommandText = sql;
+    command.Parameters.AddWithValue("value", NpgsqlDbType.Text, value);
+    return (bool)(await command.ExecuteScalarAsync() ?? false);
+}
+
+static async Task<bool> MappingExistsAsync(
+    DsqlDataSource dataSource,
+    string roleName,
+    string iamArn)
+{
+    await using var connection = await dataSource.OpenConnectionAsync();
+    await using var command = connection.CreateCommand();
+    command.CommandText = """
+        SELECT EXISTS (
+            SELECT 1
+            FROM sys.iam_pg_role_mappings
+            WHERE pg_role_name = @role_name AND arn = @iam_arn
+        )
+        """;
+    command.Parameters.AddWithValue("role_name", NpgsqlDbType.Text, roleName);
+    command.Parameters.AddWithValue("iam_arn", NpgsqlDbType.Text, iamArn);
+    return (bool)(await command.ExecuteScalarAsync() ?? false);
+}
+
 static async Task<int> CopyTableAsync(
     HttpClient httpClient,
     DsqlDataSource dataSource,
@@ -274,8 +380,10 @@ static void PrintUsage()
           apply-schema  [--schema <arquivo.sql>]
           verify-schema
           copy-catalog  --source-url <url> --source-key <chave-publicável> [--tables games,daily_featured]
+          grant-reader  --iam-arn <arn-iam> [--role spotlight_api]
+          verify-reader --user spotlight_api
 
-        Também aceita DSQL_ENDPOINT, SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY.
+        Também aceita DSQL_ENDPOINT, DSQL_USER, SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY.
         """);
 }
 

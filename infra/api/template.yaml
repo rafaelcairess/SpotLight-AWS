@@ -36,7 +36,7 @@ Globals:
         Database__Provider: AuroraDsql
         Database__Required: "true"
         Database__AuroraDsqlEndpoint: !GetAtt CatalogCluster.Endpoint
-        Database__AuroraDsqlUser: admin
+        Database__AuroraDsqlUser: spotlight_api
         Database__AuroraDsqlOccMaxRetries: "3"
 
 Resources:
@@ -58,6 +58,28 @@ Resources:
       LogGroupName: !Sub "/aws/lambda/spotlight-api-${StageName}"
       RetentionInDays: 7
 
+  ApiExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: ConnectToSpotLightCatalog
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: ConnectAsReadOnlyCatalogRole
+                Effect: Allow
+                Action: dsql:DbConnect
+                Resource: !GetAtt CatalogCluster.ResourceArn
+
   ApiFunction:
     Type: AWS::Serverless::Function
     Metadata:
@@ -66,13 +88,8 @@ Resources:
       FunctionName: !Sub "spotlight-api-${StageName}"
       CodeUri: ../../backend/SpotLight.Api/
       Handler: SpotLight.Api
+      Role: !GetAtt ApiExecutionRole.Arn
       ReservedConcurrentExecutions: 2
-      Policies:
-        - Statement:
-            - Sid: ConnectToCatalogWithIam
-              Effect: Allow
-              Action: dsql:DbConnectAdmin
-              Resource: !GetAtt CatalogCluster.ResourceArn
       FunctionUrlConfig:
         AuthType: NONE
         Cors:
@@ -91,6 +108,9 @@ Outputs:
     Value: !GetAtt ApiFunctionUrl.FunctionUrl
   FunctionName:
     Value: !Ref ApiFunction
+  ApiExecutionRoleArn:
+    Description: Associate this IAM role with the spotlight_api DSQL role after the first deploy
+    Value: !GetAtt ApiExecutionRole.Arn
   CatalogClusterIdentifier:
     Value: !Ref CatalogCluster
   CatalogClusterEndpoint:
