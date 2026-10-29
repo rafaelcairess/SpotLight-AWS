@@ -159,13 +159,16 @@ React + TypeScript
 - [x] Definir uma implantação opcional e de baixo custo em Lambda Function URL.
 - [x] Preparar o canário de leitura do frontend com rollback por consulta para o Supabase.
 - [x] Criar schema DSQL e copiar 3.457 jogos, 24 localizações e 254 destaques.
+- [x] Inventariar RLS, triggers, quotas e fluxos privilegiados antes da migração privada.
 - [ ] Opcional: publicar a API somente quando uma demonstração remota for necessária.
 - [ ] Habilitar a primeira leitura remota com `VITE_GAME_READ_SOURCE=api`.
 - [ ] Mover escritas e Edge Functions somente após validar as leituras em produção.
 
 Nenhuma migration do EF Core é aplicada automaticamente e a API C# ainda não recebe tráfego de
 produção. O plano completo, com riscos e critérios de rollback, está em
-[backend/MIGRATION_PLAN.md](./backend/MIGRATION_PLAN.md).
+[backend/MIGRATION_PLAN.md](./backend/MIGRATION_PLAN.md). O mapa das regras privadas e a ordem
+segura de implementação estão em
+[docs/private-rules-inventory.md](./docs/private-rules-inventory.md).
 
 > [!IMPORTANT]
 > A prioridade atual é manter o portfólio com custo zero ou muito baixo. A API C# permanece pronta

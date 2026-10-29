@@ -59,6 +59,15 @@ inventariados antes de qualquer cutover; copiar somente tabelas não preservaria
 - **Riscos:** dupla escrita, perda de garantias hoje implementadas por RLS/triggers e concorrência.
 - **Rollback:** interromper novas rotas de escrita e reativar o caminho Supabase anterior.
 - **Conclusão:** cada escrita é idempotente quando necessário, auditável e coberta por testes.
+- **Estado:** inventário concluído em
+  [`docs/private-rules-inventory.md`](../docs/private-rules-inventory.md). O DSQL não suporta RLS,
+  triggers ou PL/pgSQL; autorização por usuário e efeitos automáticos serão explícitos na API C#,
+  enquanto FKs, checks e índices únicos preservarão a integridade no banco.
+- **Estado da implementação:** a primeira matriz de autorização cobre perfil, biblioteca, reviews,
+  comentários e jogos privados/ocultos. Ela falha fechada para valores desconhecidos e ainda não é
+  usada por endpoints, pois nenhum dado privado foi copiado.
+- **Próximo passo:** desenhar e revisar o shadow schema privado e ampliar os testes para propriedade,
+  transições sociais e autoridade administrativa, sem liberar o papel de escrita.
 
 ## Fase 5 — Mover Edge Functions para API/Lambda
 
