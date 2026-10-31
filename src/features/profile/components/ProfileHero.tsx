@@ -7,8 +7,8 @@ interface ProfileHeroProps {
   username?: string | null;
   bio?: string | null;
   fallbackName: string;
-  presence: ReactNode;
   actions: ReactNode;
+  platforms?: ReactNode;
   stats?: Array<{ label: string; value: number }>;
 }
 
@@ -19,8 +19,8 @@ export function ProfileHero({
   username,
   bio,
   fallbackName,
-  presence,
   actions,
+  platforms,
   stats = [],
 }: ProfileHeroProps) {
   return (
@@ -41,11 +41,9 @@ export function ProfileHero({
               <h1 className="truncate font-logo text-2xl font-extrabold tracking-[-0.04em] sm:text-3xl md:text-4xl md:tracking-[-0.05em]">
                 {displayName || fallbackName}
               </h1>
-              <div className="mt-1 flex flex-wrap items-center justify-center gap-2 sm:justify-start sm:gap-3">
-                <p className="text-sm text-muted-foreground">@{username}</p>
-                {presence}
-              </div>
+              <p className="mt-1 text-sm text-muted-foreground">@{username}</p>
               {bio && <p className="mt-3 max-w-2xl text-sm leading-6 text-foreground/75">{bio}</p>}
+              {platforms && <div className="mt-4">{platforms}</div>}
             </div>
             <div className="flex w-full shrink-0 flex-wrap items-center justify-center gap-2 sm:w-auto sm:flex-col sm:items-end sm:gap-3">
               {actions}

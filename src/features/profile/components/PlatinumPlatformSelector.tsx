@@ -7,47 +7,34 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { PlatinumPlatform } from "@/hooks/useUserGames";
-import steamLogo from "@/assets/steam.png";
-
-const XBOX_HARDWARE_IMAGE =
-  "https://assets.xboxservices.com/assets/18/30/1830806b-d41d-40ce-a846-792df7d14e1d.jpg?n=Xbox-Series-X_Sharing_200x200_02.jpg";
-const PLAYSTATION_HARDWARE_IMAGE =
-  "https://blog.playstation.com/tachyon/2023/10/cd56722db7b991b3d7a33f1bafd55f80d0ac553d.png";
+import { PlatformIcon } from "@/features/profile/components/PlatformIcon";
 
 const platinumPlatforms: Array<{
   value: PlatinumPlatform;
   label: string;
-  image?: string;
 }> = [
   { value: "steam", label: "Steam" },
-  { value: "xbox", label: "Xbox", image: XBOX_HARDWARE_IMAGE },
-  { value: "playstation", label: "PlayStation", image: PLAYSTATION_HARDWARE_IMAGE },
+  { value: "xbox", label: "Xbox" },
+  { value: "playstation", label: "PlayStation" },
 ];
+
+const selectedPlatformColors: Record<PlatinumPlatform, string> = {
+  steam: "text-[#66c0f4]",
+  xbox: "text-[#107c10]",
+  playstation: "text-[#0070d1]",
+};
 
 export function PlatformLogo({ platform, size = "sm" }: { platform: string; size?: "sm" | "md" }) {
   const item = platinumPlatforms.find((option) => option.value === platform);
   if (!item) return null;
-  if (item.value !== "steam") {
-    return (
-      <span
-        title={item.label}
-        className={
-          size === "md"
-            ? "inline-flex h-7 items-center text-[10px] font-extrabold tracking-[0.08em] text-foreground"
-            : "inline-flex h-5 items-center text-[9px] font-extrabold tracking-[0.08em] text-muted-foreground"
-        }
-      >
-        {item.value === "playstation" ? "PS" : "XBOX"}
-      </span>
-    );
-  }
   return (
-    <img
-      src={steamLogo}
-      alt={item.label}
+    <span
       title={item.label}
-      className={size === "md" ? "h-7 w-7 object-contain" : "h-5 w-5 object-contain"}
-    />
+      aria-label={item.label}
+      className="inline-grid place-items-center text-foreground"
+    >
+      <PlatformIcon platform={item.value} className={size === "md" ? "h-7 w-7" : "h-5 w-5"} />
+    </span>
   );
 }
 
@@ -65,24 +52,15 @@ export function PlatformChoices({
           key={item.value}
           type="button"
           onClick={() => onChange(item.value)}
-          className={`group min-w-0 overflow-hidden rounded-md border text-left text-xs transition-colors ${value === item.value ? "border-amber-300/60 bg-amber-300/10 text-foreground" : "border-border text-muted-foreground hover:border-primary/60"}`}
+          aria-pressed={value === item.value}
+          className={`min-w-0 rounded-md border px-2 py-4 text-center text-xs transition-colors ${value === item.value ? "border-primary bg-primary/10 text-foreground" : "border-border bg-background/25 text-muted-foreground hover:border-primary/60 hover:text-foreground"}`}
         >
-          <span className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-secondary">
-            {item.image ? (
-              <img
-                src={item.image}
-                alt=""
-                className="h-full w-full object-cover transition-opacity group-hover:opacity-90"
-                loading="lazy"
-                decoding="async"
-              />
-            ) : (
-              <img src={steamLogo} alt="" className="h-10 w-10 object-contain" />
-            )}
+          <span
+            className={`flex items-center justify-center ${value === item.value ? selectedPlatformColors[item.value] : "text-foreground"}`}
+          >
+            <PlatformIcon platform={item.value} className="h-8 w-8" />
           </span>
-          <span className="block truncate border-t border-border px-2.5 py-2 font-semibold">
-            {item.label}
-          </span>
+          <span className="mt-2 block truncate font-semibold">{item.label}</span>
         </button>
       ))}
     </div>
@@ -112,7 +90,7 @@ export function PlatinumPlatformDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Onde você zerou este jogo?</DialogTitle>
+          <DialogTitle>Em qual plataforma você completou este jogo?</DialogTitle>
           <DialogDescription>
             Escolha uma plataforma. Você poderá alterar isso depois.
           </DialogDescription>

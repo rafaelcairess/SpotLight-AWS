@@ -7,6 +7,7 @@ import i18n from "@/i18n";
 import Header from "@/components/Header";
 import { Tabs } from "@/components/ui/tabs";
 import { ProfileTabBar } from "@/features/profile/components/ProfileTabBar";
+import { PlatformChoices } from "@/features/profile/components/PlatinumPlatformSelector";
 import { GameModalHeader } from "@/features/games/components/modal/GameModalHeader";
 import type { GameData } from "@/types/game";
 
@@ -134,5 +135,17 @@ describe("premium UI variants", () => {
 
     renderApp(<GameModalHeader game={game} variant="compact" />);
     expect(host.querySelector("h2")).toHaveTextContent(game.title);
+  });
+
+  it("uses clear platform glyphs instead of hardware photos", () => {
+    const onChange = vi.fn();
+    renderApp(<PlatformChoices value="steam" onChange={onChange} />);
+
+    expect(host.querySelectorAll("img")).toHaveLength(0);
+    expect(host.querySelectorAll("svg")).toHaveLength(3);
+    expect(findButton("Steam")).toHaveAttribute("aria-pressed", "true");
+
+    act(() => findButton("Xbox")?.click());
+    expect(onChange).toHaveBeenCalledWith("xbox");
   });
 });

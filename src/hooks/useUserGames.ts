@@ -106,8 +106,8 @@ export function useAddGame() {
       queryClient.invalidateQueries({ queryKey: ["user_games"] });
       queryClient.invalidateQueries({ queryKey: ["favorite-game"] });
       queryClient.invalidateQueries({ queryKey: ["profile-platinum-showcase"] });
-      queryClient.invalidateQueries({ queryKey: ["profile-recent-activity"] });
       queryClient.invalidateQueries({ queryKey: ["profile-progress"] });
+      queryClient.invalidateQueries({ queryKey: ["profile-content-counts"] });
     },
   });
 }
@@ -153,6 +153,7 @@ export function useMarkGamePlatinum() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user_games"] });
+      queryClient.invalidateQueries({ queryKey: ["profile-content-counts"] });
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       queryClient.invalidateQueries({ queryKey: ["profile-platinum-showcase"] });
     },
@@ -254,8 +255,8 @@ export function useUpdateGame() {
       queryClient.invalidateQueries({ queryKey: ["user_games"] });
       queryClient.invalidateQueries({ queryKey: ["favorite-game"] });
       queryClient.invalidateQueries({ queryKey: ["profile-platinum-showcase"] });
-      queryClient.invalidateQueries({ queryKey: ["profile-recent-activity"] });
       queryClient.invalidateQueries({ queryKey: ["profile-progress"] });
+      queryClient.invalidateQueries({ queryKey: ["profile-content-counts"] });
     },
   });
 }
@@ -295,6 +296,7 @@ export function useRemoveGame() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user_games"] });
+      queryClient.invalidateQueries({ queryKey: ["profile-content-counts"] });
     },
   });
 }

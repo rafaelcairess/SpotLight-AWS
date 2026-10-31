@@ -37,11 +37,10 @@ import { ProfileHero } from "@/features/profile/components/ProfileHero";
 import { ProfileTabBar } from "@/features/profile/components/ProfileTabBar";
 import { UserAvatar } from "@/features/profile/components/UserAvatar";
 import NotFound from "@/pages/NotFound";
-import { PresenceBadge } from "@/features/profile/components/PresenceBadge";
 import { ProfileProgressCard } from "@/features/profile/components/ProfileProgress";
 import { FavoriteGameShowcase } from "@/features/profile/components/FavoriteGameShowcase";
-import { ProfileSidePanel } from "@/features/profile/components/ProfileSidePanel";
-import { RecentActivity } from "@/features/profile/components/RecentActivity";
+import { ProfilePlatformHub } from "@/features/profile/components/ProfilePlatformHub";
+import { PlatformIcon } from "@/features/profile/components/PlatformIcon";
 import { PlatinumShowcase } from "@/features/profile/components/PlatinumShowcase";
 import { usePageMetadata } from "@/hooks/usePageMetadata";
 
@@ -80,6 +79,13 @@ const PublicProfile = () => {
     canViewProfile && canViewProfileSection(profile?.library_visibility, relationship);
   const canViewReviews =
     canViewProfile && canViewProfileSection(profile?.reviews_visibility, relationship);
+  const hasConnectedPlatform = Boolean(
+    profile?.steam_id ||
+    profile?.xbox_id ||
+    profile?.xbox_gamertag ||
+    profile?.psn_id ||
+    profile?.psn_online_id,
+  );
 
   const shouldLoadGames = ["library", "favorites", "platinum"].includes(activeTab);
   const shouldLoadReviews = activeTab === "reviews";
@@ -183,8 +189,18 @@ const PublicProfile = () => {
             username={profile.username}
             bio={profile.bio}
             fallbackName={t("profile.defaultName")}
-            presence={
-              <PresenceBadge status={profile.presence_status} lastSeenAt={profile.last_seen_at} />
+            platforms={
+              <div className="flex items-center justify-center gap-4 text-foreground/80 sm:justify-start">
+                <span className="inline-flex items-center gap-1.5 text-xs">
+                  <PlatformIcon platform="steam" className="h-4 w-4" /> Steam
+                </span>
+                <span className="inline-flex items-center gap-1.5 text-xs">
+                  <PlatformIcon platform="xbox" className="h-4 w-4" /> Xbox
+                </span>
+                <span className="inline-flex items-center gap-1.5 text-xs">
+                  <PlatformIcon platform="playstation" className="h-4 w-4" /> PlayStation
+                </span>
+              </div>
             }
             actions={
               <>
@@ -251,7 +267,13 @@ const PublicProfile = () => {
             />
 
             <TabsContent value="overview">
-              <div className="grid items-start gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_16rem]">
+              <div
+                className={
+                  hasConnectedPlatform
+                    ? "grid items-start gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]"
+                    : "space-y-4 sm:space-y-6"
+                }
+              >
                 <div className="space-y-4 sm:space-y-6">
                   <FavoriteGameShowcase userId={userId} appId={profile.favorite_game_app_id} />
                   <PlatinumShowcase
@@ -259,7 +281,6 @@ const PublicProfile = () => {
                     selectedAppIds={profile.platinum_showcase_app_ids}
                     onViewAll={() => setActiveTab("platinum")}
                   />
-                  <RecentActivity userId={userId} />
                   <div className="rounded-lg bg-black/15 p-3 sm:p-5">
                     <ProfileComments
                       profileUserId={userId!}
@@ -269,13 +290,7 @@ const PublicProfile = () => {
                     />
                   </div>
                 </div>
-                <ProfileSidePanel
-                  games={contentCounts?.games ?? 0}
-                  platinums={contentCounts?.platinums ?? 0}
-                  reviews={contentCounts?.reviews ?? 0}
-                  friends={friends.length}
-                  onSelect={setActiveTab}
-                />
+                {hasConnectedPlatform && <ProfilePlatformHub profile={profile} />}
               </div>
             </TabsContent>
 

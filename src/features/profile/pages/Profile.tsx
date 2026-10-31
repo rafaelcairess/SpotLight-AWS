@@ -21,11 +21,10 @@ import { UserListsTab } from "@/features/profile/components/UserListsTab";
 import { ProfileComments } from "@/features/profile/components/ProfileComments";
 import { useFriends } from "@/hooks/useFriendships";
 import { useProfileCounts } from "@/hooks/useProfileCounts";
-import { PresenceSelector } from "@/features/profile/components/PresenceSelector";
 import { ProfileProgressCard } from "@/features/profile/components/ProfileProgress";
 import { FavoriteGameShowcase } from "@/features/profile/components/FavoriteGameShowcase";
-import { ProfileSidePanel } from "@/features/profile/components/ProfileSidePanel";
-import { RecentActivity } from "@/features/profile/components/RecentActivity";
+import { ProfilePlatformHub } from "@/features/profile/components/ProfilePlatformHub";
+import { PlatformIcon } from "@/features/profile/components/PlatformIcon";
 import { PlatinumShowcase } from "@/features/profile/components/PlatinumShowcase";
 import { PlatinumGamePicker } from "@/features/profile/components/PlatinumGamePicker";
 import { ProfileHero } from "@/features/profile/components/ProfileHero";
@@ -99,13 +98,18 @@ const Profile = () => {
             username={profile?.username}
             bio={profile?.bio}
             fallbackName={t("profile.defaultName")}
-            presence={
-              profile ? (
-                <PresenceSelector
-                  value={profile.presence_status || "online"}
-                  lastSeenAt={profile.last_seen_at}
-                />
-              ) : null
+            platforms={
+              <div className="flex items-center justify-center gap-4 text-foreground/80 sm:justify-start">
+                <span className="inline-flex items-center gap-1.5 text-xs">
+                  <PlatformIcon platform="steam" className="h-4 w-4" /> Steam
+                </span>
+                <span className="inline-flex items-center gap-1.5 text-xs">
+                  <PlatformIcon platform="xbox" className="h-4 w-4" /> Xbox
+                </span>
+                <span className="inline-flex items-center gap-1.5 text-xs">
+                  <PlatformIcon platform="playstation" className="h-4 w-4" /> PlayStation
+                </span>
+              </div>
             }
             actions={
               <>
@@ -150,7 +154,6 @@ const Profile = () => {
                     editable
                     onViewAll={() => setActiveTab("platinum")}
                   />
-                  <RecentActivity userId={profile?.user_id} />
                   {profile?.user_id && (
                     <div className="rounded-lg bg-black/15 p-3 sm:p-5">
                       <ProfileComments
@@ -162,14 +165,13 @@ const Profile = () => {
                     </div>
                   )}
                 </div>
-                <ProfileSidePanel
-                  games={contentCounts?.games ?? 0}
-                  platinums={contentCounts?.platinums ?? 0}
-                  reviews={contentCounts?.reviews ?? 0}
-                  friends={friends.length}
-                  lists
-                  onSelect={setActiveTab}
-                />
+                {profile && (
+                  <ProfilePlatformHub
+                    profile={profile}
+                    owner
+                    onEdit={() => navigate("/profile/edit")}
+                  />
+                )}
               </div>
             </TabsContent>
 
