@@ -76,6 +76,7 @@ const CategoryCard = ({
   const description = t(`categories.${category.id}.description`, {
     defaultValue: category.description,
   });
+  const previewImage = previewGames[0]?.backgroundImage || previewGames[0]?.image;
   if (variant === "featured") {
     const previewGame = previewGames[0];
 
@@ -138,37 +139,34 @@ const CategoryCard = ({
     return (
       <Link
         to={`/collections/${category.id}`}
-        className="group grid min-h-28 grid-cols-[6.5rem_1fr] border-b border-border text-left transition-colors hover:bg-card sm:grid-cols-[8rem_1fr]"
+        className="group relative block min-h-36 overflow-hidden border-b border-border text-left transition-colors hover:border-primary/70 [contain-intrinsic-size:144px] [content-visibility:auto]"
       >
-        <div className="relative grid place-items-center overflow-hidden border-r border-border bg-secondary p-2">
-          <Icon
-            className="absolute -bottom-3 -left-3 h-16 w-16 text-foreground/[0.035]"
-            strokeWidth={1.1}
-            aria-hidden="true"
+        {previewImage ? (
+          <img
+            src={previewImage}
+            alt=""
+            className="absolute inset-0 h-full w-full scale-[1.04] object-cover opacity-[0.62] blur-[3px]"
+            loading="lazy"
+            decoding="async"
           />
-          {previewGames[0] ? (
-            <img
-              src={previewGames[0].image}
-              alt=""
-              className="relative h-auto w-full border border-border object-contain"
-              loading="lazy"
-              decoding="async"
-            />
-          ) : (
-            <div className="grid h-full place-items-center">
-              <Icon className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
-            </div>
-          )}
-        </div>
-        <div className="flex min-w-0 flex-col justify-center px-4 py-4 sm:px-5">
+        ) : (
+          <div className="absolute inset-0 grid place-items-center bg-secondary">
+            <Icon className="h-12 w-12 text-muted-foreground/20" aria-hidden="true" />
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-r from-background/[0.78] via-background/[0.58] to-background/[0.32]" />
+
+        <div className="relative z-10 flex min-h-36 min-w-0 flex-col justify-center px-5 py-5 sm:px-6">
           <span className="mb-2 text-[10px] font-semibold tabular-nums text-muted-foreground">
             {String(index + 1).padStart(2, "0")}
           </span>
-          <h3 className="flex items-center justify-between gap-3 font-bold transition-colors group-hover:text-primary">
+          <h3 className="flex items-center justify-between gap-3 text-lg font-bold transition-colors group-hover:text-primary">
             <span className="truncate">{title}</span>
             <ArrowUpRight className="h-4 w-4 shrink-0" />
           </h3>
-          <p className="mt-1 line-clamp-1 text-xs leading-5 text-muted-foreground">{description}</p>
+          <p className="mt-1 max-w-lg line-clamp-2 text-xs leading-5 text-foreground/70">
+            {description}
+          </p>
         </div>
       </Link>
     );

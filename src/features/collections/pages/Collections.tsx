@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { Sparkles } from "lucide-react";
 import { BrandMark } from "@/components/BrandMark";
 import { PageContainer, PageShell } from "@/components/PageShell";
 import CategoryCard from "@/features/collections/components/CategoryCard";
@@ -60,7 +59,6 @@ const Collections = () => {
           <SectionHeader
             title={t("collections.featuredTitle")}
             subtitle={t("collections.featuredSubtitle")}
-            icon={Sparkles}
             appearance="editorial"
           />
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
@@ -79,7 +77,6 @@ const Collections = () => {
         <SectionHeader
           title={t("collections.otherTitle")}
           subtitle={t("collections.exploreMore")}
-          icon={Sparkles}
           appearance="editorial"
         />
         <div className="grid grid-cols-1 border-t border-border lg:grid-cols-2 lg:gap-x-8">

@@ -240,10 +240,23 @@ export function useGamesByIds(appIds: number[]) {
         }
       }
 
-      return fetchGamesWithLocalization(
-        () => supabase.from("games").select("*").in("app_id", uniqueIds),
-        locale,
+      const { data: catalogRows, error } = await supabase
+        .from("steam_apps")
+        .select("app_id, name, is_game")
+        .in("app_id", uniqueIds)
+        .or("is_game.is.null,is_game.eq.true");
+
+      if (error) throw error;
+
+      const catalogMap = new Map(
+        ((catalogRows ?? []) as SteamAppRow[]).map((row) => [row.app_id, row]),
       );
+      const catalogItems = uniqueIds.flatMap((appId) => {
+        const app = catalogMap.get(appId);
+        return app ? [{ app_id: appId, title: app.name, image: getPosterImage(appId) }] : [];
+      });
+
+      return mergeCatalogItems(catalogItems, locale);
     },
     enabled: uniqueIds.length > 0,
     staleTime: 24 * 60 * 60 * 1000,
