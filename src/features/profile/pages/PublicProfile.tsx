@@ -39,10 +39,14 @@ import { UserAvatar } from "@/features/profile/components/UserAvatar";
 import NotFound from "@/pages/NotFound";
 import { ProfileProgressCard } from "@/features/profile/components/ProfileProgress";
 import { FavoriteGameShowcase } from "@/features/profile/components/FavoriteGameShowcase";
-import { ProfilePlatformHub } from "@/features/profile/components/ProfilePlatformHub";
-import { PlatformIcon } from "@/features/profile/components/PlatformIcon";
+import {
+  ProfilePlatformHub,
+  ProfilePlatformStrip,
+} from "@/features/profile/components/ProfilePlatformHub";
 import { PlatinumShowcase } from "@/features/profile/components/PlatinumShowcase";
 import { usePageMetadata } from "@/hooks/usePageMetadata";
+import { usePlatinumShowcase } from "@/hooks/usePlatinumShowcase";
+import { getProfilePlatformSummaries } from "@/features/profile/profilePlatforms";
 
 const PublicProfile = () => {
   const { username } = useParams<{ username: string }>();
@@ -79,13 +83,15 @@ const PublicProfile = () => {
     canViewProfile && canViewProfileSection(profile?.library_visibility, relationship);
   const canViewReviews =
     canViewProfile && canViewProfileSection(profile?.reviews_visibility, relationship);
-  const hasConnectedPlatform = Boolean(
-    profile?.steam_id ||
-    profile?.xbox_id ||
-    profile?.xbox_gamertag ||
-    profile?.psn_id ||
-    profile?.psn_online_id,
+  const { data: platformEntries = [] } = usePlatinumShowcase(canViewLibrary ? userId : undefined, {
+    includePrivate: false,
+    enabled: canViewLibrary,
+  });
+  const profilePlatforms = useMemo(
+    () => getProfilePlatformSummaries(profile, platformEntries, canViewLibrary),
+    [canViewLibrary, platformEntries, profile],
   );
+  const hasVisiblePlatforms = profilePlatforms.length > 0;
 
   const shouldLoadGames = ["library", "favorites", "platinum"].includes(activeTab);
   const shouldLoadReviews = activeTab === "reviews";
@@ -189,19 +195,7 @@ const PublicProfile = () => {
             username={profile.username}
             bio={profile.bio}
             fallbackName={t("profile.defaultName")}
-            platforms={
-              <div className="flex items-center justify-center gap-4 text-foreground/80 sm:justify-start">
-                <span className="inline-flex items-center gap-1.5 text-xs">
-                  <PlatformIcon platform="steam" className="h-4 w-4" /> Steam
-                </span>
-                <span className="inline-flex items-center gap-1.5 text-xs">
-                  <PlatformIcon platform="xbox" className="h-4 w-4" /> Xbox
-                </span>
-                <span className="inline-flex items-center gap-1.5 text-xs">
-                  <PlatformIcon platform="playstation" className="h-4 w-4" /> PlayStation
-                </span>
-              </div>
-            }
+            platforms={<ProfilePlatformStrip platforms={profilePlatforms} />}
             actions={
               <>
                 <ProfileProgressCard userId={userId} />
@@ -269,7 +263,7 @@ const PublicProfile = () => {
             <TabsContent value="overview">
               <div
                 className={
-                  hasConnectedPlatform
+                  hasVisiblePlatforms
                     ? "grid items-start gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]"
                     : "space-y-4 sm:space-y-6"
                 }
@@ -290,7 +284,7 @@ const PublicProfile = () => {
                     />
                   </div>
                 </div>
-                {hasConnectedPlatform && <ProfilePlatformHub profile={profile} />}
+                {hasVisiblePlatforms ? <ProfilePlatformHub platforms={profilePlatforms} /> : null}
               </div>
             </TabsContent>
 

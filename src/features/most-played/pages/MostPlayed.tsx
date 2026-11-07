@@ -1,4 +1,4 @@
-import { Flame, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import LayoutToggle from "@/components/LayoutToggle";
 import { PageContainer, PageShell } from "@/components/PageShell";
@@ -30,7 +30,6 @@ export default function MostPlayed() {
         <SectionHeader
           title={t("mostPlayed.title")}
           subtitle={t("mostPlayed.subtitle")}
-          icon={Flame}
           appearance="editorial"
           actions={<LayoutToggle value={layoutMode} onChange={setLayoutMode} />}
         />

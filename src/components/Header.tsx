@@ -2,13 +2,10 @@ import { useEffect, useState } from "react";
 import {
   Bell,
   ChevronDown,
-  Flame,
   LogOut,
   Menu,
   MessageSquare,
   Search,
-  Sparkles,
-  Trophy,
   UserRound,
   Users,
   X,
@@ -61,8 +58,8 @@ const Header = () => {
     { href: "/comunidade", label: t("header.nav.community") },
   ];
   const rankingLinks = [
-    { href: "/top", label: t("header.nav.topGames"), icon: Trophy },
-    { href: "/mais-jogados", label: t("header.nav.mostPlayed"), icon: Flame },
+    { href: "/top", label: t("header.nav.topGames") },
+    { href: "/mais-jogados", label: t("header.nav.mostPlayed") },
   ];
   const unreadCount = notifications.filter((notification) => !notification.read_at).length;
   const rankingIsActive = rankingLinks.some((link) => location.pathname === link.href);
@@ -206,8 +203,7 @@ const Header = () => {
                     asChild
                     className="cursor-pointer rounded-md p-0"
                   >
-                    <Link to={link.href} className="flex w-full items-center gap-3 px-3 py-2.5">
-                      <link.icon className="h-4 w-4 text-primary" />
+                    <Link to={link.href} className="flex w-full items-center px-3 py-2.5">
                       {link.label}
                     </Link>
                   </DropdownMenuItem>
@@ -221,7 +217,9 @@ const Header = () => {
                 "gap-2 text-emerald-300 hover:text-emerald-200",
               )}
             >
-              <Sparkles className="h-4 w-4" />
+              <span aria-hidden="true" className="font-logo text-base font-bold leading-none">
+                $
+              </span>
               {t("header.nav.promotions")}
             </Link>
           </nav>
@@ -243,7 +241,7 @@ const Header = () => {
           </form>
 
           <div className="hidden shrink-0 items-center gap-1.5 xl:flex">
-            <LanguageSwitcher />
+            {!authLoading && !user ? <LanguageSwitcher /> : null}
             {!authLoading && user ? (
               <>
                 <Button variant="ghost" size="icon" className="relative" asChild>
@@ -325,9 +323,10 @@ const Header = () => {
               </>
             ) : !authLoading ? (
               <>
-                <Button variant="ghost" size="icon" asChild>
-                  <Link to="/feedback" aria-label={t("header.feedback")}>
-                    <MessageSquare />
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/feedback">
+                    <MessageSquare className="h-4 w-4" />
+                    {t("header.feedback")}
                   </Link>
                 </Button>
                 <Button variant="outline" size="sm" asChild>
@@ -386,6 +385,11 @@ const Header = () => {
                       location.pathname === link.href && "bg-secondary",
                     )}
                   >
+                    {link.href === "/promocoes" ? (
+                      <span aria-hidden="true" className="mr-2 font-logo font-bold">
+                        $
+                      </span>
+                    ) : null}
                     {link.label}
                   </Link>
                 ),
@@ -401,17 +405,18 @@ const Header = () => {
                     location.pathname === link.href && "bg-secondary",
                   )}
                 >
-                  <link.icon className="h-4 w-4" />
                   {link.label}
                 </Link>
               ))}
             </nav>
 
             <div className="mt-4 grid gap-1 border-t border-border pt-4">
-              <div className="flex min-h-11 items-center justify-between px-4">
-                <span className="text-sm text-muted-foreground">{t("common.language")}</span>
-                <LanguageSwitcher />
-              </div>
+              {!authLoading && !user ? (
+                <div className="flex min-h-11 items-center justify-between px-4">
+                  <span className="text-sm text-muted-foreground">{t("common.language")}</span>
+                  <LanguageSwitcher />
+                </div>
+              ) : null}
               <Link
                 to="/feedback"
                 className="flex min-h-11 items-center gap-3 rounded-lg px-4 text-sm text-muted-foreground hover:bg-white/[0.05] hover:text-foreground"

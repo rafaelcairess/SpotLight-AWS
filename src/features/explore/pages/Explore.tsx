@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Clock3, Flame, Layers3, Sparkles } from "lucide-react";
+import { Flame, Layers3 } from "lucide-react";
 import { BrandMark } from "@/components/BrandMark";
 import { PageContainer, PageShell } from "@/components/PageShell";
 import FeaturedBanner from "@/features/explore/components/FeaturedBanner";
@@ -127,7 +127,6 @@ export default function Explore() {
           <SectionHeader
             title={t("home.recommendationsTitle")}
             subtitle={t("home.recommendationsSubtitle")}
-            icon={Sparkles}
             appearance="editorial"
           />
           {recommendationsLoading ? (
@@ -201,7 +200,6 @@ export default function Explore() {
         <SectionHeader
           title={t("home.newWorthPlayingTitle")}
           subtitle={t("home.newWorthPlayingSubtitle")}
-          icon={Clock3}
           appearance="editorial"
         />
         {allGamesLoading ? (
@@ -224,7 +222,6 @@ export default function Explore() {
         <SectionHeader
           title={t("home.acclaimedTitle")}
           subtitle={t("home.acclaimedSubtitle")}
-          icon={Sparkles}
           actions={<LayoutToggle value={layoutMode} onChange={setLayoutMode} />}
           appearance="editorial"
         />

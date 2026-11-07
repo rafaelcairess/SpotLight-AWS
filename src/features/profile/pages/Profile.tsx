@@ -5,7 +5,7 @@
  * em `PublicProfile.tsx` e não deve receber ações administrativas.
  */
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageContainer, PageShell } from "@/components/PageShell";
 import { Button } from "@/components/ui/button";
@@ -23,8 +23,10 @@ import { useFriends } from "@/hooks/useFriendships";
 import { useProfileCounts } from "@/hooks/useProfileCounts";
 import { ProfileProgressCard } from "@/features/profile/components/ProfileProgress";
 import { FavoriteGameShowcase } from "@/features/profile/components/FavoriteGameShowcase";
-import { ProfilePlatformHub } from "@/features/profile/components/ProfilePlatformHub";
-import { PlatformIcon } from "@/features/profile/components/PlatformIcon";
+import {
+  ProfilePlatformHub,
+  ProfilePlatformStrip,
+} from "@/features/profile/components/ProfilePlatformHub";
 import { PlatinumShowcase } from "@/features/profile/components/PlatinumShowcase";
 import { PlatinumGamePicker } from "@/features/profile/components/PlatinumGamePicker";
 import { ProfileHero } from "@/features/profile/components/ProfileHero";
@@ -35,6 +37,8 @@ import { useGameSelection } from "@/features/games/hooks/useGameSelection";
 import { useTranslation } from "react-i18next";
 import { useSyncSteamPlaytime } from "@/hooks/useSteamPlaytime";
 import { useToast } from "@/hooks/use-toast";
+import { usePlatinumShowcase } from "@/hooks/usePlatinumShowcase";
+import { getProfilePlatformSummaries } from "@/features/profile/profilePlatforms";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -62,6 +66,11 @@ const Profile = () => {
   const { t } = useTranslation();
   const { toast } = useToast();
   const syncSteam = useSyncSteamPlaytime();
+  const { data: platformEntries = [] } = usePlatinumShowcase(profile?.user_id);
+  const profilePlatforms = useMemo(
+    () => getProfilePlatformSummaries(profile, platformEntries),
+    [platformEntries, profile],
+  );
 
   if (!authLoading && !user) {
     navigate("/auth");
@@ -98,19 +107,7 @@ const Profile = () => {
             username={profile?.username}
             bio={profile?.bio}
             fallbackName={t("profile.defaultName")}
-            platforms={
-              <div className="flex items-center justify-center gap-4 text-foreground/80 sm:justify-start">
-                <span className="inline-flex items-center gap-1.5 text-xs">
-                  <PlatformIcon platform="steam" className="h-4 w-4" /> Steam
-                </span>
-                <span className="inline-flex items-center gap-1.5 text-xs">
-                  <PlatformIcon platform="xbox" className="h-4 w-4" /> Xbox
-                </span>
-                <span className="inline-flex items-center gap-1.5 text-xs">
-                  <PlatformIcon platform="playstation" className="h-4 w-4" /> PlayStation
-                </span>
-              </div>
-            }
+            platforms={<ProfilePlatformStrip platforms={profilePlatforms} />}
             actions={
               <>
                 <ProfileProgressCard userId={profile?.user_id} />
@@ -167,7 +164,7 @@ const Profile = () => {
                 </div>
                 {profile && (
                   <ProfilePlatformHub
-                    profile={profile}
+                    platforms={profilePlatforms}
                     owner
                     onEdit={() => navigate("/profile/edit")}
                   />

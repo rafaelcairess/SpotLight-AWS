@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { DollarSign } from "lucide-react";
 import SectionHeader from "@/components/SectionHeader";
 import { GameGrid } from "@/features/games/components/GameGrid";
 import GameModal from "@/features/games/components/GameModal";
@@ -36,7 +35,6 @@ const PromotionsBar = () => {
       <SectionHeader
         title={t("promotions.title")}
         subtitle={t("promotions.subtitle")}
-        icon={DollarSign}
         actions={<LayoutToggle value={layoutMode} onChange={setLayoutMode} />}
       />
 

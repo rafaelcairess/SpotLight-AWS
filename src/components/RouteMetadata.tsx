@@ -24,7 +24,7 @@ const routeMetadata: Array<{
   },
   {
     matches: (pathname) => pathname === "/top",
-    title: "Top Games",
+    title: "Seleção SpotLight",
     description: "Veja os jogos mais bem avaliados pela comunidade SpotLight.",
   },
   {

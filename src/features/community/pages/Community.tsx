@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Search, Users } from "lucide-react";
+import { Search } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { PageContainer, PageShell } from "@/components/PageShell";
 import SectionHeader from "@/components/SectionHeader";
@@ -50,11 +50,7 @@ const Community = () => {
   return (
     <PageShell>
       <PageContainer width="content" className="pb-12">
-        <SectionHeader
-          title={t("community.title")}
-          subtitle={t("community.subtitle")}
-          icon={Users}
-        />
+        <SectionHeader title={t("community.title")} subtitle={t("community.subtitle")} />
 
         <div className="mb-6">
           <div className="relative max-w-md">

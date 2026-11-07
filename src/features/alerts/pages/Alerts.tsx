@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Bell, Trash2, ArrowLeft } from "lucide-react";
+import { Trash2, ArrowLeft } from "lucide-react";
 import { PageContainer, PageShell } from "@/components/PageShell";
 import SectionHeader from "@/components/SectionHeader";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
@@ -46,7 +46,7 @@ export default function Alerts() {
           {t("alerts.backProfile")}
         </Link>
 
-        <SectionHeader title={t("alerts.title")} subtitle={t("alerts.subtitle")} icon={Bell} />
+        <SectionHeader title={t("alerts.title")} subtitle={t("alerts.subtitle")} />
 
         {isLoading || gamesLoading ? (
           <LoadingSkeleton variant="card" count={3} />

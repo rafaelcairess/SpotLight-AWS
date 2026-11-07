@@ -1,19 +1,27 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export function usePlatinumShowcase(userId?: string) {
+interface PlatinumShowcaseOptions {
+  includePrivate?: boolean;
+  enabled?: boolean;
+}
+
+export function usePlatinumShowcase(
+  userId?: string,
+  { includePrivate = true, enabled = true }: PlatinumShowcaseOptions = {},
+) {
   return useQuery({
-    queryKey: ["profile-platinum-showcase", userId],
+    queryKey: ["profile-platinum-showcase", userId, includePrivate],
     queryFn: async () => {
       if (!userId) return [];
-      const { data, error } = await supabase
+      let query = supabase
         .from("user_games")
         .select("id, app_id, hours_played, hours_played_manual, hours_override, platinum_platforms")
         .eq("user_id", userId)
         .eq("is_platinumed", true)
-        .eq("is_hidden", false)
-        .order("updated_at", { ascending: false })
-        .limit(50);
+        .eq("is_hidden", false);
+      if (!includePrivate) query = query.eq("is_private", false);
+      const { data, error } = await query.order("updated_at", { ascending: false }).limit(50);
       if (error) throw error;
       return data.map((game) => ({
         ...game,
@@ -23,7 +31,7 @@ export function usePlatinumShowcase(userId?: string) {
             : game.hours_played,
       }));
     },
-    enabled: !!userId,
+    enabled: enabled && !!userId,
     staleTime: 2 * 60 * 1000,
   });
 }

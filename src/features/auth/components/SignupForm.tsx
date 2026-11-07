@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Loader2, Mail, Lock, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import steamIcon from "@/assets/steam.png";
+import { FaSteam } from "react-icons/fa";
 
 interface SignupFormProps {
   onSwitchToLogin: () => void;
@@ -92,7 +92,7 @@ export function SignupForm({ onSwitchToLogin }: SignupFormProps) {
 
       <div className="space-y-2">
         <Button type="button" variant="outline" className="w-full gap-2" onClick={handleSteamLogin}>
-          <img src={steamIcon} alt="Steam" className="w-4 h-4" />
+          <FaSteam aria-hidden="true" className="h-4 w-4 shrink-0 text-white" />
           {t("auth.form.steamLogin")}
         </Button>
 

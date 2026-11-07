@@ -121,7 +121,7 @@ ou destinatário de uma atualização.
 Estas condições bloqueiam qualquer cutover:
 
 - perfil privado não pode ser descoberto por busca, review, lista, favorito, platina ou comentário;
-- jogo privado não pode vazar por review, reação, lista pública ou Top Games;
+- jogo privado não pode vazar por review, reação, lista pública ou Seleção SpotLight;
 - dono, autor, relações e timestamps imutáveis não vêm do payload;
 - `is_admin`, IDs/tokens de plataforma, horas importadas e origem são campos do servidor;
 - amizade possui transições válidas; follow e amizade não aceitam autorreferência;

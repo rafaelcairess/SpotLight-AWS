@@ -33,7 +33,9 @@ export function PlatinumShowcase({
   editable = false,
   onViewAll,
 }: PlatinumShowcaseProps) {
-  const { data: entries = [] } = usePlatinumShowcase(userId);
+  const { data: entries = [] } = usePlatinumShowcase(userId, {
+    includePrivate: editable,
+  });
   const { data: games = [] } = useGamesByIds(entries.map((entry) => entry.app_id));
   const [showMature] = useMaturePreference();
   const [editing, setEditing] = useState(false);

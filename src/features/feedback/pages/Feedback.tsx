@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { MessageSquare, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { PageContainer, PageShell } from "@/components/PageShell";
 import SectionHeader from "@/components/SectionHeader";
@@ -48,11 +48,7 @@ export default function Feedback() {
   return (
     <PageShell>
       <PageContainer width="content" className="pb-12">
-        <SectionHeader
-          title={t("feedback.title")}
-          subtitle={t("feedback.anonymous")}
-          icon={MessageSquare}
-        />
+        <SectionHeader title={t("feedback.title")} subtitle={t("feedback.anonymous")} />
 
         <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
           <form

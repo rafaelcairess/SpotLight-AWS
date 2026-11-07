@@ -1,105 +1,52 @@
 import { useEffect, useRef, useState } from "react";
-import { Gamepad2, Trophy, BarChart2, Bug, Sparkles, List, Zap } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { ONBOARDING_COMPLETED_EVENT, STORAGE_KEYS } from "@/config/storageKeys";
 
-interface ChangelogItem {
-  icon: React.ElementType;
-  color: string;
-  title: string;
-  description: string;
-  type: "feature" | "fix" | "improvement";
-}
-
-const CHANGELOG_ITEMS: ChangelogItem[] = [
-  {
-    icon: List,
-    color: "text-indigo-400",
-    title: "Listas personalizadas",
-    description: "Crie coleções temáticas de jogos e compartilhe com a comunidade.",
-    type: "feature",
-  },
-  {
-    icon: Trophy,
-    color: "text-yellow-400",
-    title: "Conquistas SpotLight",
-    description:
-      "Desbloqueie badges ao adicionar jogos, escrever reviews e conectar-se com jogadores.",
-    type: "feature",
-  },
-  {
-    icon: BarChart2,
-    color: "text-purple-400",
-    title: "Insights do perfil",
-    description: "Veja gráficos de gêneros favoritos, taxa de conclusão e atividade mensal.",
-    type: "feature",
-  },
-  {
-    icon: Zap,
-    color: "text-green-400",
-    title: "Login com Steam e Xbox",
-    description: "Entre com sua conta Steam ou Xbox Live e importe sua biblioteca automaticamente.",
-    type: "feature",
-  },
-  {
-    icon: Gamepad2,
-    color: "text-blue-400",
-    title: "Página individual de jogo",
-    description:
-      "Cada jogo agora tem sua própria página com reviews da comunidade e detalhes completos.",
-    type: "feature",
-  },
-  {
-    icon: Bug,
-    color: "text-red-400",
-    title: "Correções e estabilidade",
-    description: "Erros com código de identificação, perfil Steam corrigido e melhorias gerais.",
-    type: "fix",
-  },
-];
-
-const TYPE_LABELS: Record<ChangelogItem["type"], string> = {
-  feature: "Novo",
-  improvement: "Melhoria",
-  fix: "Correção",
-};
-
-const TYPE_COLORS: Record<ChangelogItem["type"], string> = {
-  feature: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",
-  improvement: "bg-blue-500/20 text-blue-300 border-blue-500/30",
-  fix: "bg-red-500/20 text-red-300 border-red-500/30",
-};
+const WHATS_NEW_VERSION = "2026.11";
+const CHANGELOG_KEYS = ["interface", "collections", "profile", "library", "stability"] as const;
 
 export default function WhatsNewModal() {
   const { user, loading } = useAuth();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const hasOpened = useRef(false);
 
   useEffect(() => {
-    if (loading) return;
-    if (typeof window === "undefined") return;
+    if (loading || typeof window === "undefined") return;
 
     const onboardingKey = `${STORAGE_KEYS.onboarding}.${user?.id ?? "guest"}`;
     let timer: ReturnType<typeof setTimeout> | undefined;
 
+    const hasSeenCurrentVersion = () => {
+      try {
+        return window.localStorage.getItem(STORAGE_KEYS.whatsNewSeenVersion) === WHATS_NEW_VERSION;
+      } catch {
+        return hasOpened.current;
+      }
+    };
+
     const scheduleOpen = () => {
-      if (hasOpened.current || timer) return;
+      if (hasOpened.current || timer || hasSeenCurrentVersion()) return;
       timer = setTimeout(() => {
         hasOpened.current = true;
         setOpen(true);
       }, 600);
     };
 
-    if (window.localStorage.getItem(onboardingKey) === "done") scheduleOpen();
+    try {
+      if (window.localStorage.getItem(onboardingKey) === "done") scheduleOpen();
+    } catch {
+      // If storage is blocked, the onboarding event can still open the notes once per session.
+    }
     window.addEventListener(ONBOARDING_COMPLETED_EVENT, scheduleOpen);
 
     return () => {
@@ -108,76 +55,54 @@ export default function WhatsNewModal() {
     };
   }, [loading, user?.id]);
 
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    try {
+      window.localStorage.setItem(STORAGE_KEYS.whatsNewSeenVersion, WHATS_NEW_VERSION);
+    } catch {
+      // Closing the dialog still works when storage is unavailable.
+    }
+    setOpen(false);
+  };
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(v) => {
-        if (!v) handleClose();
-      }}
-    >
-      <DialogContent className="max-h-[calc(100dvh-1rem)] max-w-lg overflow-y-auto sm:max-h-[85vh]">
-        <DialogHeader className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary" />
-            <Badge
-              variant="outline"
-              className="bg-primary/10 text-primary border-primary/30 text-xs font-semibold"
-            >
-              O que há de novo
-            </Badge>
-          </div>
-          <DialogTitle className="text-xl">SpotLight foi atualizado!</DialogTitle>
-          <DialogDescription className="text-sm text-muted-foreground">
-            Confira as novidades e melhorias desta versão.
+    <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && handleClose()}>
+      <DialogContent className="max-h-[calc(100dvh-1rem)] max-w-2xl overflow-y-auto sm:max-h-[85vh]">
+        <DialogHeader className="space-y-3 border-b border-border pb-5">
+          <p className="eyebrow">{t("whatsNew.eyebrow")}</p>
+          <DialogTitle className="max-w-xl text-2xl leading-tight tracking-[-0.03em] sm:text-3xl">
+            {t("whatsNew.title")}
+          </DialogTitle>
+          <DialogDescription className="max-w-xl text-sm leading-6">
+            {t("whatsNew.description")}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="mt-2 rounded-lg border border-primary/25 bg-primary/5 p-4">
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            Este projeto está sendo desenvolvido por uma única pessoa e é open source. Estou
-            aprendendo e evoluindo o SpotLight aos poucos, conforme avanço nos meus estudos. O
-            projeto começou no início da minha faculdade de Análise e Desenvolvimento de Sistemas e
-            continua crescendo junto com meu aprendizado. Atualmente o site está em uma migração
-            para AWS, o que pode causar instabilidades temporárias. Obrigado por usar o SpotLight!
-            💜
-          </p>
-        </div>
-
-        <div className="mt-2 space-y-3">
-          {CHANGELOG_ITEMS.map((item) => {
-            const Icon = item.icon;
-            return (
-              <div
-                key={item.title}
-                className="flex items-start gap-3 rounded-lg border border-border/40 bg-secondary/10 p-3 hover:bg-secondary/20 transition-colors"
-              >
-                <div className={`mt-0.5 shrink-0 p-1.5 rounded-md bg-secondary/40 ${item.color}`}>
-                  <Icon className="w-4 h-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                    <p className="text-sm font-semibold leading-tight">{item.title}</p>
-                    <span
-                      className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${TYPE_COLORS[item.type]}`}
-                    >
-                      {TYPE_LABELS[item.type]}
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {item.description}
-                  </p>
-                </div>
+        <ol className="divide-y divide-border">
+          {CHANGELOG_KEYS.map((key, index) => (
+            <li key={key} className="grid grid-cols-[2rem_minmax(0,1fr)] gap-3 py-4 sm:gap-4">
+              <span className="pt-0.5 font-logo text-xs font-semibold tabular-nums text-primary">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <div>
+                <h3 className="text-sm font-semibold">{t(`whatsNew.items.${key}.title`)}</h3>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  {t(`whatsNew.items.${key}.description`)}
+                </p>
               </div>
-            );
-          })}
-        </div>
+            </li>
+          ))}
+        </ol>
 
-        <div className="mt-4 flex justify-end">
-          <Button onClick={handleClose} className="w-full gap-2 sm:w-auto">
-            <Sparkles className="w-4 h-4" />
-            Entendido!
+        <section className="border-t border-border pt-5">
+          <h3 className="text-sm font-semibold">{t("whatsNew.aboutTitle")}</h3>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            {t("whatsNew.aboutDescription")}
+          </p>
+        </section>
+
+        <div className="flex justify-end pt-2">
+          <Button onClick={handleClose} className="w-full sm:w-auto sm:min-w-32">
+            {t("whatsNew.continue")}
           </Button>
         </div>
       </DialogContent>

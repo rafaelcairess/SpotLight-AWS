@@ -6,7 +6,7 @@ import type { GameData } from "@/types/game";
 import { getPosterImage, getSteamStoreUrl } from "@/lib/steam";
 import { formatPlayers, getRatingColorClass, isFreePrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import steamIcon from "@/assets/steam.png";
+import { FaSteam } from "react-icons/fa";
 
 interface GameModalHeaderProps {
   game: GameData;
@@ -85,7 +85,7 @@ export const GameModalHeader = ({ game, variant = "compact" }: GameModalHeaderPr
                 size="lg"
                 className="mt-6 w-full gap-2 px-4 min-[390px]:w-auto sm:px-6"
               >
-                <img src={steamIcon} alt="" className="h-5 w-5" />
+                <FaSteam aria-hidden="true" className="h-5 w-5 shrink-0 text-white" />
                 {t("gameModal.viewOnSteam")}
                 <ExternalLink className="opacity-75" />
               </Button>
@@ -123,7 +123,7 @@ export const GameModalHeader = ({ game, variant = "compact" }: GameModalHeaderPr
             onClick={openSteam}
             className="mt-4 w-full gap-2 px-3 text-xs sm:mt-5 sm:w-auto sm:px-5 sm:text-sm"
           >
-            <img src={steamIcon} alt="" className="h-5 w-5" />
+            <FaSteam aria-hidden="true" className="h-5 w-5 shrink-0 text-white" />
             {t("gameModal.viewOnSteam")}
             <ExternalLink className="opacity-80" />
           </Button>

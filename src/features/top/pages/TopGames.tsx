@@ -1,4 +1,4 @@
-import { Loader2, Trophy } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import LayoutToggle from "@/components/LayoutToggle";
 import { PageContainer, PageShell } from "@/components/PageShell";
@@ -47,7 +47,6 @@ export default function TopGames() {
         <SectionHeader
           title={t("topGames.title")}
           subtitle={t("topGames.subtitle")}
-          icon={Trophy}
           appearance="editorial"
           actions={<LayoutToggle value={layoutMode} onChange={setLayoutMode} />}
         />

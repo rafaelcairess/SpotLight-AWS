@@ -50,7 +50,7 @@ export const resources = {
           promotions: "Promoções",
           community: "Comunidade",
           rankings: "Rankings",
-          topGames: "Top Games",
+          topGames: "Seleção SpotLight",
           mostPlayed: "Mais jogados",
         },
         searchPlaceholder: "Buscar jogos...",
@@ -236,6 +236,15 @@ export const resources = {
         syncSteamImportSuccess: "Biblioteca importada ({{count}} jogos).",
         hiddenTab: "Ocultos",
         hiddenEmpty: "Nenhum jogo oculto.",
+        platformHub: {
+          eyebrow: "Perfil multiplataforma",
+          title: "Um lugar para todos os seus jogos",
+          connected: "Conta conectada",
+          registeredGames_one: "{{count}} jogo registrado",
+          registeredGames_other: "{{count}} jogos registrados",
+          empty: "Conecte uma conta ou registre a plataforma ao completar um jogo.",
+          manage: "Gerenciar contas",
+        },
       },
       profileLibrarySections: {
         completed: {
@@ -365,10 +374,10 @@ export const resources = {
         count: "{{count}} Platinas",
       },
       topGames: {
-        title: "Top Games",
-        subtitle: "Top 10 pelo SpotLight",
-        showing: "Exibindo Top 10 pelo SpotLight",
-        topCount: "Top 10",
+        title: "Seleção SpotLight",
+        subtitle: "10 jogos escolhidos pelo SpotLight",
+        showing: "Exibindo a Seleção SpotLight",
+        topCount: "10 escolhidos",
       },
       mostPlayed: {
         title: "Mais jogados da Steam",
@@ -391,6 +400,42 @@ export const resources = {
         follow: "Seguir",
         following: "Seguindo",
         you: "Você",
+      },
+      whatsNew: {
+        eyebrow: "Notas da versão · novembro de 2026",
+        title: "O SpotLight está mais simples e conectado",
+        description: "Uma atualização focada em clareza, curadoria e no seu perfil.",
+        items: {
+          interface: {
+            title: "Uma interface mais sóbria",
+            description:
+              "Menos efeitos decorativos e mais espaço para os jogos, com superfícies planas e leitura direta.",
+          },
+          collections: {
+            title: "Coleções revistas",
+            description:
+              "Seleções mais úteis, imagens maiores e uma apresentação que ajuda a escolher o próximo jogo.",
+          },
+          profile: {
+            title: "Perfil multiplataforma",
+            description:
+              "Steam, Xbox e PlayStation aparecem quando estão conectados ou associados aos seus jogos.",
+          },
+          library: {
+            title: "Favoritos e biblioteca",
+            description:
+              "Pesquise qualquer jogo favorito e adicione-o à biblioteca na mesma ação.",
+          },
+          stability: {
+            title: "Correções gerais",
+            description:
+              "Ajustes de desempenho, acessibilidade e estabilidade em diferentes tamanhos de tela.",
+          },
+        },
+        aboutTitle: "Sobre o projeto",
+        aboutDescription:
+          "O SpotLight é um projeto independente e open source, criado e mantido por uma pessoa durante seus estudos. A migração para AWS continua gradualmente, com foco em custo baixo e estabilidade.",
+        continue: "Continuar",
       },
       alerts: {
         backProfile: "Voltar ao perfil",
@@ -438,7 +483,7 @@ export const resources = {
           { title: "Coleções", description: "Sem ideia do que jogar? Filtra por humor ou estilo e escolhe." },
           { title: "Promoções", description: "Jogo que você quer tá caro? Aqui você acompanha as promoções." },
           { title: "Comunidade", description: "Veja o que outros jogadores estão jogando e o que acharam." },
-          { title: "Top Games", description: "Ranking curado do SpotLight e o que a galera tá jogando de verdade." },
+          { title: "Seleção SpotLight", description: "Jogos escolhidos pelo SpotLight e o que a galera está jogando de verdade." },
           { title: "Alertas", description: "Coloca o preço que você topa pagar e a gente te avisa quando chegar lá." },
           { title: "Reviews", description: "Escreva o que achou e deixe sua marca na página do jogo." },
         ],
@@ -715,7 +760,7 @@ export const resources = {
           promotions: "Deals",
           community: "Community",
           rankings: "Rankings",
-          topGames: "Top Games",
+          topGames: "SpotLight Picks",
           mostPlayed: "Most played",
         },
         searchPlaceholder: "Search games...",
@@ -900,6 +945,15 @@ export const resources = {
         syncSteamImportSuccess: "Library imported ({{count}} games).",
         hiddenTab: "Hidden",
         hiddenEmpty: "No hidden games.",
+        platformHub: {
+          eyebrow: "Cross-platform profile",
+          title: "One place for all your games",
+          connected: "Connected account",
+          registeredGames_one: "{{count}} registered game",
+          registeredGames_other: "{{count}} registered games",
+          empty: "Connect an account or record a platform when you complete a game.",
+          manage: "Manage accounts",
+        },
       },
       profileLibrarySections: {
         completed: {
@@ -1029,10 +1083,10 @@ export const resources = {
         count: "{{count}} Platinums",
       },
       topGames: {
-        title: "Top Games",
-        subtitle: "Top 10 by SpotLight",
-        showing: "Showing Top 10 by SpotLight",
-        topCount: "Top 10",
+        title: "SpotLight Picks",
+        subtitle: "10 games chosen by SpotLight",
+        showing: "Showing the SpotLight Picks",
+        topCount: "10 picks",
       },
       mostPlayed: {
         title: "Most played on Steam",
@@ -1055,6 +1109,41 @@ export const resources = {
         follow: "Follow",
         following: "Following",
         you: "You",
+      },
+      whatsNew: {
+        eyebrow: "Release notes · November 2026",
+        title: "SpotLight is simpler and more connected",
+        description: "An update focused on clarity, curation and your profile.",
+        items: {
+          interface: {
+            title: "A calmer interface",
+            description:
+              "Fewer decorative effects and more room for games, with flat surfaces and direct reading.",
+          },
+          collections: {
+            title: "Revised collections",
+            description:
+              "More useful selections, larger artwork and a presentation that helps you choose what to play next.",
+          },
+          profile: {
+            title: "A cross-platform profile",
+            description:
+              "Steam, Xbox and PlayStation appear when connected or associated with your games.",
+          },
+          library: {
+            title: "Favorites and library",
+            description: "Search for any favorite game and add it to your library in the same action.",
+          },
+          stability: {
+            title: "General fixes",
+            description:
+              "Performance, accessibility and stability improvements across screen sizes.",
+          },
+        },
+        aboutTitle: "About the project",
+        aboutDescription:
+          "SpotLight is an independent, open-source project created and maintained by one person while studying. The AWS migration continues gradually, with low cost and stability as priorities.",
+        continue: "Continue",
       },
       alerts: {
         backProfile: "Back to profile",
@@ -1102,7 +1191,7 @@ export const resources = {
           { title: "Collections", description: "No idea what to play? Filter by mood or style and just pick." },
           { title: "Deals", description: "Game you want too expensive? Track the deals here." },
           { title: "Community", description: "See what other players are playing and what they think." },
-          { title: "Top Games", description: "SpotLight's curated ranking and what people are actually playing." },
+          { title: "SpotLight Picks", description: "Games chosen by SpotLight and what people are actually playing." },
           { title: "Alerts", description: "Set the price you're willing to pay and we'll let you know when it gets there." },
           { title: "Reviews", description: "Write what you think and leave your mark on the game's page." },
         ],
@@ -1378,7 +1467,7 @@ export const resources = {
           promotions: "Ofertas",
           community: "Comunidad",
           rankings: "Rankings",
-          topGames: "Top Games",
+          topGames: "Selección SpotLight",
           mostPlayed: "Más jugados",
         },
         searchPlaceholder: "Buscar juegos...",
@@ -1563,6 +1652,15 @@ export const resources = {
         syncSteamImportSuccess: "Biblioteca importada ({{count}} juegos).",
         hiddenTab: "Ocultos",
         hiddenEmpty: "Sin juegos ocultos.",
+        platformHub: {
+          eyebrow: "Perfil multiplataforma",
+          title: "Un lugar para todos tus juegos",
+          connected: "Cuenta conectada",
+          registeredGames_one: "{{count}} juego registrado",
+          registeredGames_other: "{{count}} juegos registrados",
+          empty: "Conecta una cuenta o registra la plataforma al completar un juego.",
+          manage: "Administrar cuentas",
+        },
       },
       profileLibrarySections: {
         completed: {
@@ -1692,10 +1790,10 @@ export const resources = {
         count: "{{count}} Platinos",
       },
       topGames: {
-        title: "Top Games",
-        subtitle: "Top 10 por SpotLight",
-        showing: "Mostrando Top 10 por SpotLight",
-        topCount: "Top 10",
+        title: "Selección SpotLight",
+        subtitle: "10 juegos elegidos por SpotLight",
+        showing: "Mostrando la Selección SpotLight",
+        topCount: "10 elegidos",
       },
       mostPlayed: {
         title: "Más jugados en Steam",
@@ -1718,6 +1816,42 @@ export const resources = {
         follow: "Seguir",
         following: "Siguiendo",
         you: "Tú",
+      },
+      whatsNew: {
+        eyebrow: "Notas de la versión · noviembre de 2026",
+        title: "SpotLight es más simple y está más conectado",
+        description: "Una actualización enfocada en claridad, selección y en tu perfil.",
+        items: {
+          interface: {
+            title: "Una interfaz más sobria",
+            description:
+              "Menos efectos decorativos y más espacio para los juegos, con superficies planas y lectura directa.",
+          },
+          collections: {
+            title: "Colecciones revisadas",
+            description:
+              "Selecciones más útiles, imágenes más grandes y una presentación que ayuda a elegir qué jugar.",
+          },
+          profile: {
+            title: "Perfil multiplataforma",
+            description:
+              "Steam, Xbox y PlayStation aparecen cuando están conectados o asociados a tus juegos.",
+          },
+          library: {
+            title: "Favoritos y biblioteca",
+            description:
+              "Busca cualquier juego favorito y agrégalo a tu biblioteca en la misma acción.",
+          },
+          stability: {
+            title: "Correcciones generales",
+            description:
+              "Mejoras de rendimiento, accesibilidad y estabilidad en distintos tamaños de pantalla.",
+          },
+        },
+        aboutTitle: "Sobre el proyecto",
+        aboutDescription:
+          "SpotLight es un proyecto independiente y open source, creado y mantenido por una persona durante sus estudios. La migración a AWS continúa gradualmente, con foco en bajo costo y estabilidad.",
+        continue: "Continuar",
       },
       alerts: {
         backProfile: "Volver al perfil",
@@ -1765,7 +1899,7 @@ export const resources = {
           { title: "Colecciones", description: "¿Sin idea de qué jugar? Filtra por estilo o humor y elige." },
           { title: "Ofertas", description: "¿El juego que querés está caro? Seguí las ofertas acá." },
           { title: "Comunidad", description: "Mirá qué están jugando otros y qué les pareció." },
-          { title: "Top Games", description: "El ranking curado de SpotLight y lo que la gente realmente juega." },
+          { title: "Selección SpotLight", description: "Juegos elegidos por SpotLight y lo que la gente realmente juega." },
           { title: "Alertas", description: "Ponés el precio que estás dispuesto a pagar y te avisamos cuando llegue." },
           { title: "Reviews", description: "Escribí lo que te pareció y dejá tu huella en la página del juego." },
         ],

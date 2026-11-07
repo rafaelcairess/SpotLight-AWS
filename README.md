@@ -86,7 +86,7 @@ O **SpotLight** reúne essa história em um só lugar. Além da biblioteca pesso
       <p align="center"><strong>Perfil gamer compartilhável</strong></p>
     </td>
     <td width="50%" valign="top">
-      <a href="https://spotlight.rafaelcpires.abrdns.com/top"><img src="docs/screenshots/top-games.webp" alt="Ranking Top Games do SpotLight" width="100%"></a>
+      <a href="https://spotlight.rafaelcpires.abrdns.com/top"><img src="docs/screenshots/top-games.webp" alt="Seleção SpotLight" width="100%"></a>
       <p align="center"><strong>Rankings da comunidade</strong></p>
     </td>
   </tr>

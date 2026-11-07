@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { GameData } from "@/types/game";
 import { cn } from "@/lib/utils";
-import steamIcon from "@/assets/steam.png";
 import { useTranslation } from "react-i18next";
+import { FaSteam } from "react-icons/fa";
 import { getSteamStoreUrl } from "@/lib/steam";
 import { formatPlayers, getRatingColorClass } from "@/lib/format";
 
@@ -119,7 +119,7 @@ const FeaturedBanner = ({ game, onExplore, isAuthenticated = false }: FeaturedBa
             className="h-9 px-1 text-muted-foreground underline-offset-4 hover:bg-transparent hover:text-foreground hover:underline"
             onClick={handleOpenSteam}
           >
-            <img src={steamIcon} alt="" className="h-4 w-4" />
+            <FaSteam aria-hidden="true" className="h-4 w-4 shrink-0 text-white" />
             {t("gameModal.viewOnSteam")}
           </Button>
         </div>
